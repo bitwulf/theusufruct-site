@@ -27,8 +27,14 @@ Requirements: Node 20+, `curl`, `unzip`, `shasum`.
 
 ```sh
 npm install
+npm run build    # one-time: builds the Pagefind index so /search works in dev
 npm run dev      # fetches latest corpus, then starts Astro dev on :4321
 ```
+
+The first `npm run build` is needed once because Pagefind only runs at build
+time. It writes its index to `dist/_pagefind/` *and* mirrors a copy into
+`public/_pagefind/` (gitignored), which is what `astro dev` actually serves.
+After that, plain `npm run dev` is enough until you ship a new corpus snapshot.
 
 Or, to pin a snapshot:
 

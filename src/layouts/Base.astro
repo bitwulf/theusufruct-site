@@ -29,9 +29,9 @@ const {
   bodyClass = '',
 } = Astro.props;
 
-const fullTitle = title === 'The Usufruct'
-  ? 'The Usufruct — Louisiana Civil Code'
-  : `${title} · The Usufruct`;
+const fullTitle = title === 'Usufruct'
+  ? 'Usufruct — Louisiana Civil Code'
+  : `${title} · Usufruct`;
 
 const origin = 'https://theusufruct.com';
 function normalizePath(p: string): string {
@@ -70,13 +70,13 @@ const isCurrent = (href: string) => {
     {!searchable && <meta name="pagefind-ignore" content="all" />}
 
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="The Usufruct" />
+    <meta property="og:site_name" content="Usufruct" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalUrl} />
     <meta name="twitter:card" content="summary" />
 
-    <link rel="alternate" type="application/atom+xml" title="The Usufruct — releases" href="/feed.xml" />
+    <link rel="alternate" type="application/atom+xml" title="Usufruct — releases" href="/feed.xml" />
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
@@ -98,8 +98,8 @@ const isCurrent = (href: string) => {
     <a href="#main" class="skip-link">Skip to content</a>
     <header class="site-header">
       <div class="site-header__inner">
-        <a href="/" class="site-header__brand" aria-label="The Usufruct home">
-          The <span class="mark">Usufruct</span>
+        <a href="/" class="site-header__brand" aria-label="Usufruct home">
+          <span class="mark">Usufruct</span>
         </a>
         <nav class="site-header__nav" aria-label="Primary">
           {pageNav.map((item) => (
@@ -141,7 +141,7 @@ const isCurrent = (href: string) => {
     <footer class="site-footer">
       <div class="site-footer__inner">
         <div class="site-footer__col">
-          <h2>The Usufruct</h2>
+          <h2>Usufruct</h2>
           <ul>
             <li><a href="/about">About</a></li>
             <li><a href="/roadmap">Roadmap</a></li>

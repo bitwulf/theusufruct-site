@@ -14,10 +14,10 @@
   --ink: #181613;
   --ink-soft: #4c4843;
   --ink-mute: #6f6962;
-  --accent: #6b1a1a;   /* deep oxblood */
-  --accent-soft: #8e3232;
-  --link: #6b1a1a;
-  --link-visited: #5a2a2a;
+  --accent: #3d4d1c;     /* dark forest-olive */
+  --accent-soft: #4d6028;
+  --link: #3d4d1c;
+  --link-visited: #2e3c14;
   --status-active: #2c5e2e;
   --status-repealed: #7a3a1f;
   --status-blank: #6b6660;
@@ -49,10 +49,10 @@
   --ink: #e8e6e0;
   --ink-soft: #c4bfb6;
   --ink-mute: #8a847c;
-  --accent: #d77a7a;
-  --accent-soft: #c66262;
-  --link: #d77a7a;
-  --link-visited: #b88080;
+  --accent: #92a85e;       /* darker olive for dark mode */
+  --accent-soft: #7a9048;
+  --link: #92a85e;
+  --link-visited: #849855;
   --status-active: #93c393;
   --status-repealed: #d49b75;
   --status-blank: #a39d94;
@@ -67,10 +67,10 @@
     --ink: #e8e6e0;
     --ink-soft: #c4bfb6;
     --ink-mute: #8a847c;
-    --accent: #d77a7a;
-    --accent-soft: #c66262;
-    --link: #d77a7a;
-    --link-visited: #b88080;
+    --accent: #92a85e;
+    --accent-soft: #7a9048;
+    --link: #92a85e;
+    --link-visited: #849855;
     --status-active: #93c393;
     --status-repealed: #d49b75;
     --status-blank: #a39d94;

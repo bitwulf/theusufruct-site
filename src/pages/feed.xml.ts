@@ -23,7 +23,7 @@ export const GET: APIRoute = async () => {
 
   const xml = `<?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <title>The Usufruct — Civil Code snapshots</title>
+  <title>Usufruct — Civil Code snapshots</title>
   <subtitle>Corpus releases of the Louisiana Civil Code.</subtitle>
   <link href="${ORIGIN}/" />
   <link rel="self" href="${id}" type="application/atom+xml" />
@@ -39,7 +39,7 @@ export const GET: APIRoute = async () => {
     <link rel="alternate" type="application/zip" href="${release.archiveUrl}" />
     <updated>${entryUpdated}</updated>
     <published>${entryUpdated}</published>
-    <author><name>The Usufruct</name></author>
+    <author><name>Usufruct</name></author>
     <summary>${summary}</summary>
     <content type="html">${escapeXml(`
       <p>${summary}</p>

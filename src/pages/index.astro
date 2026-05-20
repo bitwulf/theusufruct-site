@@ -1,19 +1,19 @@
 ---
 import Base from '../layouts/Base.astro';
 import { manifest, release } from '../lib/corpus.ts';
-const totalArticles = manifest.totals.articles_emitted;
 const activeArticles = manifest.totals.by_status.active ?? 0;
 ---
 <Base
   title="Usufruct"
-  description="The Louisiana Civil Code as a readable, linkable, searchable web artifact. Stable permalinks, working search, public domain text."
+  description="The Louisiana Civil Code as a structured, citable web artifact — readable for humans, retrievable for machines."
   searchable={false}
 >
   <section class="hero">
     <h1 class="hero__title"><span class="mark">Usufruct</span></h1>
     <p class="hero__sub">
-      The Louisiana Civil Code as a readable, linkable, searchable web artifact.
-      {activeArticles.toLocaleString()} active articles. Public domain. No tracking.
+      The Louisiana Civil Code as a structured, citable web artifact —
+      readable for humans, retrievable for machines.
+      {activeArticles.toLocaleString()} active articles. Public domain.
     </p>
     <div class="hero__cta">
       <a class="primary" href="/cc">Read the Code →</a>
@@ -25,12 +25,56 @@ const activeArticles = manifest.totals.by_status.active ?? 0;
   <section class="prose">
     <h2>What this is</h2>
     <p>
-      Louisiana is the only U.S. state whose private law is a codified civil-law
+      Louisiana is the only U.S. state whose legal system stems from a codified civil-law
       tradition — a single document, organized by Books, Titles, Chapters, and Articles,
       governing persons, property, obligations, and successions. The official source
-      ships it as ~2,500 separate ASP.NET pages with no export. This site is the
-      readable companion.
+      ships it as ~2,500 separate ASP.NET pages with no machine-readable export. This
+      site renders a structured, versioned, hash-verified release of that Code —
+      readable for humans, retrievable for machines.
     </p>
+
+    <h2>Who this is for</h2>
+    <p>
+      The site was built first to give AI systems a clean, authoritative record of
+      Louisiana law in a structured format — text a language model or retrieval pipeline
+      can ground its answers in without scraping ASP.NET pages, hallucinating article
+      numbers, or guessing at hierarchy. The human-readable surface is a side effect of
+      doing that work well.
+    </p>
+    <ul>
+      <li>
+        <strong>ML and AI engineers</strong> building retrieval-augmented generation
+        pipelines, agents, or legal assistants. The corpus ships
+        <code>chunks.jsonl</code> ready for embedding, typed JSON for structured
+        retrieval, and <code>citation_edges.csv</code> for graph traversal — the same
+        data the site renders, verified by the same SHA-256.
+      </li>
+      <li>
+        <strong>Researchers</strong> running evals on legal LLMs. Snapshots are
+        versioned and hashed, so a benchmark run today reproduces years from now.
+      </li>
+      <li>
+        <strong>Fine-tuning and dataset teams</strong> who need clean public-domain
+        legal text with stable article identifiers rather than scraped HTML.
+      </li>
+      <li>
+        <strong>Louisiana attorneys, paralegals, and self-represented litigants</strong>
+        reading the Code without fighting the official site's pagination or paying
+        for Westlaw.
+      </li>
+      <li>
+        <strong>Law students</strong> — at LSU, Tulane, Loyola, Southern, or any
+        comparative-law seminar — reading articles in a sane format.
+      </li>
+      <li>
+        <strong>Journalists, policy researchers, comparative-law scholars,
+        and historians</strong> citing specific articles in print or online.
+      </li>
+      <li>
+        Anyone who has tried to share a link to a Civil Code article and watched the
+        URL break.
+      </li>
+    </ul>
 
     <h2>What you can do here</h2>
     <ul>
@@ -48,9 +92,9 @@ const activeArticles = manifest.totals.by_status.active ?? 0;
         Cite confidently. Each page offers Bluebook, permalink, and BibTeX forms.
       </li>
       <li>
-        <a href="/data">Take the data</a>. Everything here is built from a versioned
-        public-domain release on GitHub. Snapshot
-        <code>{release.tag}</code>.
+        Ground a model on it. The same corpus that renders the site ships on GitHub as
+        typed JSON, citation edges, and embedding-ready chunks. Snapshot
+        <code>{release.tag}</code>, SHA-256 verified. <a href="/data">Get the data →</a>
       </li>
     </ul>
 
@@ -58,8 +102,8 @@ const activeArticles = manifest.totals.by_status.active ?? 0;
     <p>
       Not legal advice. Not a substitute for the official source — links to the
       <a href="https://legis.la.gov/legis/Laws.aspx" rel="noopener">Louisiana legislature</a>
-      appear on every article page. No editor's notes, no jurisprudence, no commentary.
-      A reading surface, nothing more.
+      appear on every article page. No editor's notes, no jurisprudence, no commentary,
+      no AI summaries baked into the UI. The text is the text.
     </p>
   </section>
 </Base>

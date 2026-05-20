@@ -310,6 +310,26 @@ li { margin-bottom: var(--space-2); }
 }
 .site-footer__col li { margin-bottom: 0.4em; }
 
+.site-footer__imprint {
+  max-width: 78ch;
+  margin: var(--space-5) auto 0;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--rule);
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--ink-mute);
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+.site-footer__imprint a {
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+.site-footer__imprint a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
 /* ----------------------------------------------------------- breadcrumb -- */
 .breadcrumb {
   font-family: var(--mono);

@@ -1,0 +1,30 @@
+---
+// Renders the article body. The corpus stores text with `\n\n` between
+// paragraphs and an explicit `A.`/`B.`/`C.` (or `1.`, `2.`) prefix on
+// subparagraphs. We split paragraphs, peel off the prefix into a visually-
+// distinct label, and emit `<p>` elements.
+
+export interface Props {
+  text: string;
+}
+const { text } = Astro.props;
+
+const paragraphs = text.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
+const SUBPARA_RE = /^([A-Z]\.|[0-9]+\.|\([a-z]\)|\([0-9]+\))\s+/;
+
+const parsed = paragraphs.map((p) => {
+  const m = p.match(SUBPARA_RE);
+  if (m) {
+    return { label: m[1], body: p.slice(m[0].length) };
+  }
+  return { label: null, body: p };
+});
+---
+<div class="article__body">
+  {parsed.map((p) => (
+    <p>
+      {p.label && <span class="subpara-label">{p.label}</span>}
+      <span set:html={p.body.replace(/\n/g, '<br/>')} />
+    </p>
+  ))}
+</div>

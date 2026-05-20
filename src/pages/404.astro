@@ -1,0 +1,62 @@
+---
+import Base from '../layouts/Base.astro';
+import { ALL_NUMBERS } from '../lib/corpus.ts';
+// Build-time neighbor map used by the client script to suggest valid articles
+// when someone navigates to a missing slot like /cc/9999.
+const exists = JSON.stringify(ALL_NUMBERS);
+---
+<Base
+  title="Not found"
+  description="Page not found."
+  noindex
+  searchable={false}
+>
+  <article class="prose">
+    <h1>Not found</h1>
+    <p>
+      That URL doesn't correspond to a Civil Code article or container in the current
+      snapshot. A few things you can try:
+    </p>
+    <ul>
+      <li><a href="/cc">Browse the Code</a> from the top.</li>
+      <li><a href="/search">Search</a> the full text.</li>
+      <li>If you were looking for an article number, the closest existing neighbors are below.</li>
+    </ul>
+
+    <div id="neighbors" style="margin-top: var(--space-5);"></div>
+  </article>
+
+  <script id="all-numbers" type="application/json" set:html={exists}></script>
+  <script is:inline>
+    (function () {
+      var raw = document.getElementById('all-numbers');
+      if (!raw) return;
+      var nums = JSON.parse(raw.textContent || '[]');
+      var path = location.pathname.replace(/\/$/, '');
+      var m = path.match(/^\/cc\/(\d+(?:\.\d+)?)$/);
+      if (!m) return;
+      var target = m[1];
+      function key(n) {
+        var p = n.split('.');
+        return [parseInt(p[0],10) || 0, parseInt(p[1],10) || 0];
+      }
+      var tk = key(target);
+      var sorted = nums.slice().sort(function (a, b) {
+        var ka = key(a), kb = key(b);
+        return ka[0] !== kb[0] ? ka[0] - kb[0] : ka[1] - kb[1];
+      });
+      var before = null, after = null;
+      for (var i = 0; i < sorted.length; i++) {
+        var k = key(sorted[i]);
+        if (k[0] < tk[0] || (k[0] === tk[0] && k[1] < tk[1])) before = sorted[i];
+        else if ((k[0] > tk[0]) || (k[0] === tk[0] && k[1] > tk[1])) { after = sorted[i]; break; }
+      }
+      var html = '<p style="font-family:var(--mono);font-size:0.85rem;color:var(--ink-mute)">Nothing at <code>art. ' + target + '</code> in the current snapshot.</p>';
+      html += '<ul class="refs-list">';
+      if (before) html += '<li><a href="/cc/' + before + '">← Art. ' + before + '</a></li>';
+      if (after) html += '<li><a href="/cc/' + after + '">Art. ' + after + ' →</a></li>';
+      html += '</ul>';
+      document.getElementById('neighbors').innerHTML = html;
+    })();
+  </script>
+</Base>

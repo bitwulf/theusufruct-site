@@ -1,0 +1,8 @@
+---
+export interface Props {
+  status: 'active' | 'repealed' | 'reserved' | 'blank';
+}
+const { status } = Astro.props;
+const label = status.toUpperCase();
+---
+<span class={`pill pill--${status}`} aria-label={`Status: ${label}`}>{label}</span>

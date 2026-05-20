@@ -1,0 +1,28 @@
+---
+import type { ActsCitation } from '../lib/corpus.ts';
+import { formatActsCitation } from '../lib/cite.ts';
+
+export interface Props {
+  citations: ActsCitation[];
+  raw: string | null;
+}
+const { citations, raw } = Astro.props;
+const hasStructured = citations.length > 0;
+---
+<section class="article__section">
+  <h2>History</h2>
+  {hasStructured ? (
+    <ul class="history">
+      {citations.map((c) => (
+        <li>
+          <span class="role">{c.role ?? ''}</span>
+          {formatActsCitation(c)}
+        </li>
+      ))}
+    </ul>
+  ) : raw ? (
+    <p class="history__raw">{raw}</p>
+  ) : (
+    <p class="refs-empty">No legislative history recorded.</p>
+  )}
+</section>

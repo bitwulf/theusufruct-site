@@ -1,0 +1,105 @@
+---
+import Base from '../layouts/Base.astro';
+import { release, manifest } from '../lib/corpus.ts';
+---
+<Base
+  title="About"
+  description="About The Usufruct — provenance, methodology, citation guidance, and project goals."
+>
+  <article class="prose">
+    <h1>About</h1>
+
+    <p>
+      <strong>The Usufruct</strong> publishes the <em>Louisiana Civil Code</em> — the
+      foundational document of Louisiana private law — as a clean, searchable web
+      artifact. The text is public domain. The site exists because the official source
+      (<a href="https://legis.la.gov" rel="noopener">legis.la.gov</a>) ships the Code as
+      thousands of disconnected ASP.NET pages with no machine-readable export, weak
+      typography, and brittle URLs.
+    </p>
+
+    <p>
+      A <em>usufruct</em>, in civil law, is the right to use and enjoy a thing belonging
+      to another. This is what the site is: enjoyment of a public document, made usable.
+    </p>
+
+    <h2>Provenance</h2>
+    <p>
+      The corpus is produced by the open-source
+      <a href="https://github.com/bitwulf/Usufruct" rel="noopener">Usufruct project</a>:
+      a scrape + structured-extraction pipeline that turns legis.la.gov into typed JSON,
+      a hierarchical tree, citation edges, and per-article markdown. Snapshots ship as
+      versioned GitHub Releases. This site is a downstream <em>consumer</em> of those
+      releases. The build downloads the latest release zip, verifies its SHA-256, and
+      renders the Code from those files. No private feed, no privileged data access —
+      the same build would run on anyone's laptop.
+    </p>
+
+    <p>
+      Active snapshot: <a href={release.releasePage} rel="noopener"><code>{release.tag}</code></a>
+      ({manifest.totals.articles_emitted.toLocaleString()} article records;
+      {' '}{manifest.totals.containers} containers).
+    </p>
+
+    <h2>Methodology</h2>
+    <ul>
+      <li>
+        The Civil Code is the union of <em>Preliminary Title</em> and Books I–IV. Every
+        article slot in that union is rendered as a page — including repealed slots and
+        slots that the Code structure reserves but does not fill. A reader Googling
+        "la civ code 2310" lands somewhere real, not a 404.
+      </li>
+      <li>
+        Article URLs are <strong>flat and citable</strong>: <code>/cc/{`{`}number{`}`}</code>.
+        Hierarchical URLs are for browsing only. Article URLs do not change when names or
+        editorial structure change upstream.
+      </li>
+      <li>
+        Cross-references between articles come from the corpus's
+        <code>citation_edges.csv</code>. "References" lists outgoing edges; "Cited by"
+        lists incoming. Both are stable per snapshot.
+      </li>
+      <li>
+        Legislative history is rendered from structured <code>acts_citations</code>;
+        when those are unavailable for an article, the raw history string is shown.
+      </li>
+      <li>
+        Each article page exposes a one-line provenance footer with the snapshot tag,
+        scrape timestamp, and a truncated source-HTML hash. A change in the upstream
+        source flips the hash, so divergence is visible.
+      </li>
+    </ul>
+
+    <h2>Citing</h2>
+    <p>
+      Every article page has a <strong>Cite</strong> action that produces three forms:
+    </p>
+    <ul>
+      <li><strong>Bluebook</strong>: <code>La. Civ. Code art. 2315 (2026).</code></li>
+      <li><strong>Permalink</strong>: the canonical absolute URL on theusufruct.com.</li>
+      <li><strong>BibTeX</strong>: a <code>@misc</code> entry including the snapshot tag.</li>
+    </ul>
+    <p>
+      The year in the Bluebook form is derived from the snapshot's
+      <code>generated_at</code> timestamp, not the year of viewing. Old snapshots
+      remain consistent.
+    </p>
+
+    <h2>What this site avoids</h2>
+    <ul>
+      <li>No tracking cookies, no client-side analytics, no third-party fonts.</li>
+      <li>No editor's notes, jurisprudence, or commentary — these would require copyrighted source material and editorial judgment outside the project's scope.</li>
+      <li>No AI summaries, embeddings, or semantic search baked into the site UI. The raw chunks for downstream RAG live in the corpus release as <code>chunks.jsonl</code>.</li>
+    </ul>
+
+    <h2>Disclaimer</h2>
+    <p>
+      <strong>This site is not legal advice.</strong> For binding text, defer to the
+      official version at the Louisiana legislature. The provenance footer on each
+      article page links directly to its source. Errors in the corpus or in the
+      rendering can be reported as
+      <a href="https://github.com/bitwulf/Usufruct/issues" rel="noopener">issues</a> on
+      the upstream repository.
+    </p>
+  </article>
+</Base>

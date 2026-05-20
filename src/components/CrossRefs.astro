@@ -1,0 +1,33 @@
+---
+import { articlesByNumber } from '../lib/corpus.ts';
+export interface Props {
+  heading: string;
+  numbers: string[];
+}
+const { heading, numbers } = Astro.props;
+---
+<section class="article__section">
+  <h2>{heading}</h2>
+  {numbers.length === 0 ? (
+    <p class="refs-empty">None.</p>
+  ) : (
+    <ul class="refs-list">
+      {numbers.map((n) => {
+        const a = articlesByNumber.get(n);
+        const heading = a?.heading ?? '';
+        const status = a?.status ?? 'blank';
+        return (
+          <li>
+            <a
+              href={`/cc/${n}`}
+              title={heading ? `Art. ${n} — ${heading}` : `Art. ${n}`}
+              data-status={status}
+            >
+              Art. {n}
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  )}
+</section>

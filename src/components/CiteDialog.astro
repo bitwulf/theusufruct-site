@@ -1,0 +1,68 @@
+---
+import { citationFor } from '../lib/cite.ts';
+
+export interface Props {
+  number: string;
+}
+const { number } = Astro.props;
+const c = citationFor(number);
+const dlgId = `cite-${number.replace(/\./g, '-')}`;
+---
+<dialog class="cite-dialog" id={dlgId} aria-labelledby={`${dlgId}-title`}>
+  <h2 id={`${dlgId}-title`}>Cite Article {number}</h2>
+
+  <div class="cite-block">
+    <div class="cite-block__label">Bluebook</div>
+    <pre class="cite-block__value" data-copy>{c.bluebook}</pre>
+    <button type="button" class="cite-block__copy" data-copy-btn>Copy</button>
+  </div>
+
+  <div class="cite-block">
+    <div class="cite-block__label">Permalink</div>
+    <pre class="cite-block__value" data-copy>{c.permalink}</pre>
+    <button type="button" class="cite-block__copy" data-copy-btn>Copy</button>
+  </div>
+
+  <div class="cite-block">
+    <div class="cite-block__label">BibTeX</div>
+    <pre class="cite-block__value" data-copy>{c.bibtex}</pre>
+    <button type="button" class="cite-block__copy" data-copy-btn>Copy</button>
+  </div>
+
+  <form method="dialog" class="cite-dialog__close">
+    <button class="actions" type="submit">Close</button>
+  </form>
+</dialog>
+<script is:inline>
+  (function () {
+    // Single delegated handler for all open/copy/close events on this page.
+    document.addEventListener('click', function (e) {
+      var t = e.target;
+      if (!(t instanceof Element)) return;
+
+      var open = t.closest('[data-cite-open]');
+      if (open) {
+        e.preventDefault();
+        var id = open.getAttribute('data-cite-open');
+        var dlg = id ? document.getElementById(id) : null;
+        if (dlg && typeof dlg.showModal === 'function') dlg.showModal();
+        return;
+      }
+
+      var copyBtn = t.closest('[data-copy-btn]');
+      if (copyBtn) {
+        e.preventDefault();
+        var block = copyBtn.closest('.cite-block');
+        var pre = block && block.querySelector('[data-copy]');
+        var text = pre ? pre.textContent || '' : '';
+        if (navigator.clipboard && text) {
+          navigator.clipboard.writeText(text).then(function () {
+            var prev = copyBtn.textContent;
+            copyBtn.textContent = 'Copied';
+            setTimeout(function () { copyBtn.textContent = prev; }, 1200);
+          }).catch(function () { /* ignore */ });
+        }
+      }
+    });
+  })();
+</script>

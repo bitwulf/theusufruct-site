@@ -1,0 +1,93 @@
+---
+import Base from '../layouts/Base.astro';
+import { release, manifest } from '../lib/corpus.ts';
+---
+<Base
+  title="Data"
+  description="Download the Usufruct corpus. Versioned releases, SHA-256 verified, public domain."
+>
+  <article class="prose">
+    <h1>Data</h1>
+
+    <p>
+      The full corpus is published as versioned releases on GitHub. The site you are
+      reading is a downstream consumer of these releases. Use them.
+    </p>
+
+    <div class="callout">
+      <p style="margin: 0 0 var(--space-2);">
+        <strong>Current snapshot:</strong>
+        <a href={release.releasePage} rel="noopener"><code>{release.tag}</code></a>
+        — {manifest.totals.articles_emitted.toLocaleString()} article records,
+        {' '}{manifest.totals.containers} containers,
+        generated {release.generatedAt.replace('T', ' ').replace('Z', ' UTC')}.
+      </p>
+      <p style="margin: 0;">
+        <a href={release.archiveUrl} rel="noopener">Download zip</a>
+        {' · '}
+        <a href={release.shaUrl} rel="noopener">SHA-256</a>
+        {' · '}
+        <a href="https://github.com/bitwulf/Usufruct/releases" rel="noopener">All releases</a>
+      </p>
+    </div>
+
+    <h2>What's in the archive</h2>
+    <dl>
+      <dt><code>articles.jsonl</code></dt>
+      <dd>One JSON record per article (~3,623 lines). The canonical form.</dd>
+      <dt><code>articles/&lt;number&gt;.json</code></dt>
+      <dd>Same records, one file per article — easier random access.</dd>
+      <dt><code>markdown/&lt;number&gt;.md</code></dt>
+      <dd>Per-article markdown with YAML frontmatter, for tools that read markdown.</dd>
+      <dt><code>tree.json</code></dt>
+      <dd>Book → Title → Chapter hierarchy with article numbers attached at each leaf.</dd>
+      <dt><code>hierarchy.json</code></dt>
+      <dd>Flat list of all {manifest.totals.containers} hierarchy containers, with parent chains.</dd>
+      <dt><code>citation_edges.csv</code></dt>
+      <dd>Cross-references between articles (<code>src → dst</code>) extracted from article body text.</dd>
+      <dt><code>chunks.jsonl</code></dt>
+      <dd>Pre-split article chunks suitable for RAG / embedding pipelines.</dd>
+      <dt><code>manifest.json</code></dt>
+      <dd>Schema version, totals, per-status counts, <code>generated_at</code> timestamp.</dd>
+    </dl>
+
+    <h2>Verifying</h2>
+    <pre><code>{`# Download both files
+curl -LO ${release.archiveUrl}
+curl -LO ${release.shaUrl}
+
+# Verify (macOS / Linux)
+shasum -a 256 -c ${release.tag.startsWith('20') ? 'usufruct-' + release.tag + '.zip.sha256' : '*.zip.sha256'}
+
+# Unpack
+unzip usufruct-${release.tag}.zip`}</code></pre>
+
+    <h2>Fetching by article number</h2>
+    <p>
+      This site exposes each article as both JSON and Markdown for direct fetching, no
+      release download required:
+    </p>
+    <pre><code>{`curl https://theusufruct.com/cc/2315.json
+curl https://theusufruct.com/cc/2315.md`}</code></pre>
+    <p>
+      These mirror the records inside the release archive. For programmatic access at
+      scale, download the archive once and read from disk — it is the data, not an API.
+    </p>
+
+    <h2>Schema</h2>
+    <p>
+      The article record schema is documented in the corpus repo:
+      <a
+        href="https://github.com/bitwulf/Usufruct/blob/main/src/usufruct/model/schema.py"
+        rel="noopener"
+      >src/usufruct/model/schema.py</a>. Current schema version: <code>{manifest.schema_version}</code>.
+    </p>
+
+    <h2>License</h2>
+    <p>
+      The Civil Code text is in the public domain. The corpus structure, scripts, and
+      this site's code are open source on
+      <a href="https://github.com/bitwulf/Usufruct" rel="noopener">GitHub</a>. Take it.
+    </p>
+  </article>
+</Base>

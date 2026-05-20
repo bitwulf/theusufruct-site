@@ -1,0 +1,65 @@
+---
+import Base from '../layouts/Base.astro';
+import { release, manifest } from '../lib/corpus.ts';
+const buildTime = new Date().toISOString();
+---
+<Base
+  title="Colophon"
+  description="Build info, typography, and credits for The Usufruct."
+>
+  <article class="prose">
+    <h1>Colophon</h1>
+
+    <h2>Typography</h2>
+    <ul>
+      <li>
+        Body and headings: <strong>Source Serif 4</strong> by Frank Grießhammer (Adobe),
+        released under the SIL Open Font License. Self-hosted via Fontsource.
+      </li>
+      <li>
+        Metadata, code, and cross-references: <strong>JetBrains Mono</strong>, released
+        under the SIL Open Font License. Self-hosted via Fontsource.
+      </li>
+      <li>System fallbacks: Georgia (serif) and the system monospace family.</li>
+    </ul>
+
+    <h2>Palette</h2>
+    <ul>
+      <li>Light: bone <code>#f8f7f2</code> on ink <code>#181613</code>.</li>
+      <li>Dark: warm dark <code>#1a1816</code> on off-white <code>#e8e6e0</code>.</li>
+      <li>Accent: deep oxblood <code>#6b1a1a</code> (dark mode: <code>#d77a7a</code>).</li>
+    </ul>
+
+    <h2>Stack</h2>
+    <ul>
+      <li><strong>Astro</strong> static site generator, zero JS by default.</li>
+      <li><strong>Pagefind</strong> for in-browser full-text search; index built at build time.</li>
+      <li>Hosting: <strong>Cloudflare Pages</strong>, free tier. CDN handles bandwidth; no origin server.</li>
+      <li>No third-party scripts, no analytics, no cookies. Server-side analytics via Cloudflare's anonymized counters only.</li>
+    </ul>
+
+    <h2>Build details</h2>
+    <dl>
+      <dt>Corpus snapshot</dt>
+      <dd>
+        <a href={release.releasePage} rel="noopener"><code>{release.tag}</code></a>,
+        generated {release.generatedAt}.
+      </dd>
+      <dt>Articles emitted</dt>
+      <dd>{manifest.totals.articles_emitted.toLocaleString()} ({manifest.totals.by_status.active ?? 0} active · {manifest.totals.by_status.repealed ?? 0} repealed · {manifest.totals.by_status.blank ?? 0} blank)</dd>
+      <dt>Containers</dt>
+      <dd>{manifest.totals.containers}</dd>
+      <dt>Schema version</dt>
+      <dd><code>{manifest.schema_version}</code></dd>
+      <dt>Site built</dt>
+      <dd><time datetime={buildTime}>{buildTime}</time></dd>
+    </dl>
+
+    <h2>Source</h2>
+    <p>
+      Corpus pipeline:
+      <a href="https://github.com/bitwulf/Usufruct" rel="noopener">github.com/bitwulf/Usufruct</a>.
+      This site's source: see the same repository (or any mirror).
+    </p>
+  </article>
+</Base>

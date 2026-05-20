@@ -1,0 +1,19 @@
+---
+import type { CrumbLink } from '../lib/corpus.ts';
+export interface Props {
+  crumbs: CrumbLink[];
+}
+const { crumbs } = Astro.props;
+---
+<nav class="breadcrumb" aria-label="Breadcrumb">
+  {crumbs.map((c, i) => (
+    <>
+      {i > 0 && <span class="breadcrumb__sep" aria-hidden="true">›</span>}
+      {i === crumbs.length - 1 ? (
+        <span aria-current="page">{c.label}</span>
+      ) : (
+        <a href={c.href}>{c.label}</a>
+      )}
+    </>
+  ))}
+</nav>

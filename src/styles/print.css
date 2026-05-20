@@ -1,0 +1,74 @@
+@media print {
+  :root {
+    --bg: #ffffff;
+    --bg-elev: #ffffff;
+    --rule: #cccccc;
+    --ink: #000000;
+    --ink-soft: #222222;
+    --ink-mute: #444444;
+    --accent: #000000;
+    --link: #000000;
+  }
+  html, body { background: #fff; color: #000; }
+
+  /* Strip chrome. */
+  .site-header,
+  .site-footer,
+  .search-trigger,
+  .theme-toggle,
+  .actions,
+  .prevnext,
+  .cite-dialog,
+  .child-list,
+  .articles-grid {
+    display: none !important;
+  }
+
+  main {
+    max-width: none;
+    padding: 0;
+  }
+
+  .article {
+    max-width: none;
+  }
+
+  a, a:visited {
+    color: #000;
+    text-decoration: none;
+  }
+
+  /* Render permalink after the article title for paper-archival. */
+  .article__num::after {
+    content: ' · theusufruct.com';
+    color: #444;
+    font-weight: 400;
+  }
+
+  .article__section h2 {
+    color: #000;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+  }
+
+  .article__body p { orphans: 3; widows: 3; }
+
+  .breadcrumb { color: #444; font-size: 0.7rem; margin-bottom: 1rem; }
+  .breadcrumb a { color: #444; }
+
+  .pill {
+    border-color: #000;
+    color: #000;
+  }
+
+  .provenance {
+    font-size: 0.65rem;
+    color: #444;
+    margin-top: 1.5rem;
+    border-top: 1px dashed #aaa;
+  }
+
+  /* Page break controls */
+  h1, h2, h3 { page-break-after: avoid; }
+  .article__head { page-break-after: avoid; }
+}

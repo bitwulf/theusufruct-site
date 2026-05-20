@@ -1,0 +1,24 @@
+# Build output
+dist/
+
+# Dependencies
+node_modules/
+
+# Fetched corpus (never checked in)
+tmp/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.log
+.env
+.env.*
+!.env.example
+
+# Astro
+.astro/
+
+# MISC
+BRIEF.md
+

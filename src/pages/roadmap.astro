@@ -1,0 +1,74 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base
+  title="Roadmap"
+  description="What's next for The Usufruct: LRS, ancillary codes, and project priorities."
+>
+  <article class="prose">
+    <h1>Roadmap</h1>
+
+    <p>
+      The Usufruct project's plans live upstream in
+      <a href="https://github.com/bitwulf/Usufruct/blob/main/ROADMAP.md" rel="noopener">ROADMAP.md</a>.
+      This page is a public mirror of the highlights affecting this site.
+    </p>
+
+    <h2>Shipped (v1 — this site)</h2>
+    <ul>
+      <li>Louisiana Civil Code, all article slots rendered (active, repealed, blank).</li>
+      <li>Stable flat URLs at <code>/cc/&#123;number&#125;</code> with a citation popover on every page.</li>
+      <li>Browseable hierarchy at <code>/cc/&#123;book&#125;/&#123;title&#125;/&#123;chapter&#125;</code> with position-numbered slugs.</li>
+      <li>Cross-references and reverse-cross-references per article, from the corpus citation graph.</li>
+      <li>Pagefind full-text search, filterable by status and Book.</li>
+      <li>Dark mode, print stylesheet, no tracking, self-hosted typography.</li>
+      <li>Per-article JSON / Markdown endpoints for direct programmatic access.</li>
+      <li>Atom feed announcing each new corpus snapshot.</li>
+    </ul>
+
+    <h2>Planned (corpus side, then site)</h2>
+    <ul>
+      <li>
+        <strong>Louisiana Revised Statutes (LRS).</strong> The wider statutory corpus —
+        Titles 1–56. When the corpus ships LRS, this site will mount it at
+        <code>/rs/&#123;title&#125;/&#123;section&#125;</code> using the same article-page
+        template. The IA is already prepared.
+      </li>
+      <li>
+        <strong>Children's Code, Code of Criminal Procedure, Code of Evidence.</strong>
+        Each lives at its own corpus prefix; each gets its own root on this site
+        (<code>/childrens-code/…</code> etc.).
+      </li>
+      <li>
+        <strong>Citation graph view.</strong> A standalone page visualizing the in/out
+        reference network. Deferred from v1; tracked in upstream issues.
+      </li>
+      <li>
+        <strong>Historical snapshots.</strong> A time-machine view that lets readers see
+        how an article read at a previous snapshot tag. Once a second snapshot exists,
+        this becomes useful.
+      </li>
+    </ul>
+
+    <h2>Out of scope (intentionally)</h2>
+    <ul>
+      <li>
+        <strong>Editor's notes, jurisprudence summaries, commentary.</strong> These rely
+        on copyrighted material and editorial judgment. They belong to publishers; this
+        site stays out of their territory.
+      </li>
+      <li>
+        <strong>User accounts, comments, annotations.</strong> Static publication, by
+        design.
+      </li>
+      <li>
+        <strong>Built-in AI summaries / embeddings.</strong> <code>chunks.jsonl</code>
+        is provided for downstream RAG; the site is not the place to render its outputs.
+      </li>
+      <li>
+        <strong>Internationalization.</strong> The Civil Code is in English. The historic
+        French text is not in the corpus and is not slated to be.
+      </li>
+    </ul>
+  </article>
+</Base>

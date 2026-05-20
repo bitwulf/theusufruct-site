@@ -1,0 +1,74 @@
+---
+import { neighbors, articlesByNumber } from '../lib/corpus.ts';
+
+export interface Props {
+  number: string;
+}
+const { number } = Astro.props;
+const n = neighbors(number);
+const current = articlesByNumber.get(number);
+const isActive = current?.status === 'active';
+
+// Defaults: skip repealed/blank → use prevActive/nextActive when the current
+// article is active. Repealed/blank pages show "all" by default so the user
+// sees adjacent slots (more useful context for missing articles).
+const defaultPrev = isActive ? n.prevActive : n.prevAll;
+const defaultNext = isActive ? n.nextActive : n.nextAll;
+
+const prevAll = n.prevAll;
+const nextAll = n.nextAll;
+---
+<section class="article__section">
+  <h2>Article navigation</h2>
+  <div
+    class="prevnext"
+    data-prevnext
+    data-prev-active={n.prevActive ?? ''}
+    data-next-active={n.nextActive ?? ''}
+    data-prev-all={n.prevAll ?? ''}
+    data-next-all={n.nextAll ?? ''}
+  >
+    {defaultPrev ? (
+      <a href={`/cc/${defaultPrev}`} data-prev rel="prev">
+        <span class="prevnext__hint">← Previous</span>
+        <span class="prevnext__num">Art. {defaultPrev}</span>
+      </a>
+    ) : (
+      <span class="prevnext__hint empty">← Previous</span>
+    )}
+    {defaultNext ? (
+      <a href={`/cc/${defaultNext}`} class="prevnext__right" data-next rel="next">
+        <span class="prevnext__hint">Next →</span>
+        <span class="prevnext__num">Art. {defaultNext}</span>
+      </a>
+    ) : (
+      <span class="prevnext__hint prevnext__right empty">Next →</span>
+    )}
+    {(prevAll !== n.prevActive || nextAll !== n.nextActive) && (
+      <label class="prevnext__toggle">
+        <input type="checkbox" data-include-all checked={!isActive} />
+        Include repealed and blank articles in navigation
+      </label>
+    )}
+  </div>
+</section>
+<script is:inline>
+  (function () {
+    var root = document.querySelector('[data-prevnext]');
+    if (!root) return;
+    var toggle = root.querySelector('[data-include-all]');
+    if (!toggle) return;
+    var prev = root.querySelector('[data-prev]');
+    var next = root.querySelector('[data-next]');
+    var prevActive = root.getAttribute('data-prev-active');
+    var nextActive = root.getAttribute('data-next-active');
+    var prevAll = root.getAttribute('data-prev-all');
+    var nextAll = root.getAttribute('data-next-all');
+    toggle.addEventListener('change', function () {
+      var p = toggle.checked ? prevAll : prevActive;
+      var n = toggle.checked ? nextAll : nextActive;
+      if (prev && p) { prev.href = '/cc/' + p; prev.querySelector('.prevnext__num').textContent = 'Art. ' + p; }
+      if (next && n) { next.href = '/cc/' + n; next.querySelector('.prevnext__num').textContent = 'Art. ' + n; }
+    });
+  })();
+</script>

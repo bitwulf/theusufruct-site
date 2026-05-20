@@ -1,0 +1,35 @@
+---
+import { release } from '../lib/corpus.ts';
+
+export interface Props {
+  scrapeTimestamp: string | null;
+  sourceHash: string | null;
+  sourceUrl: string | null;
+}
+const { scrapeTimestamp, sourceHash, sourceUrl } = Astro.props;
+const truncated = sourceHash ? sourceHash.replace(/^sha256:/, '').slice(0, 16) : null;
+---
+<aside class="provenance" aria-label="Provenance">
+  <div class="provenance__row">
+    <strong>Snapshot</strong>
+    <a href={release.releasePage} rel="noopener">{release.tag}</a>
+  </div>
+  {scrapeTimestamp && (
+    <div class="provenance__row">
+      <strong>Scraped</strong>
+      <time datetime={scrapeTimestamp}>{scrapeTimestamp.replace('T',' ').replace('Z',' UTC')}</time>
+    </div>
+  )}
+  {truncated && (
+    <div class="provenance__row">
+      <strong>HTML hash</strong>
+      <code>{truncated}…</code>
+    </div>
+  )}
+  {sourceUrl && (
+    <div class="provenance__row">
+      <strong>Source</strong>
+      <a href={sourceUrl} rel="noopener">legis.la.gov</a>
+    </div>
+  )}
+</aside>

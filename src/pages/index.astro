@@ -1,0 +1,65 @@
+---
+import Base from '../layouts/Base.astro';
+import { manifest, release } from '../lib/corpus.ts';
+const totalArticles = manifest.totals.articles_emitted;
+const activeArticles = manifest.totals.by_status.active ?? 0;
+---
+<Base
+  title="The Usufruct"
+  description="The Louisiana Civil Code as a readable, linkable, searchable web artifact. Stable permalinks, working search, public domain text."
+  searchable={false}
+>
+  <section class="hero">
+    <h1 class="hero__title">The <span class="mark">Usufruct</span></h1>
+    <p class="hero__sub">
+      The Louisiana Civil Code as a readable, linkable, searchable web artifact.
+      {activeArticles.toLocaleString()} active articles. Public domain. No tracking.
+    </p>
+    <div class="hero__cta">
+      <a class="primary" href="/cc">Read the Code →</a>
+      <a href="/search">Search</a>
+      <a href="/data">Get the data</a>
+    </div>
+  </section>
+
+  <section class="prose">
+    <h2>What this is</h2>
+    <p>
+      Louisiana is the only U.S. state whose private law is a codified civil-law
+      tradition — a single document, organized by Books, Titles, Chapters, and Articles,
+      governing persons, property, obligations, and successions. The official source
+      ships it as ~2,500 separate ASP.NET pages with no export. This site is the
+      readable companion.
+    </p>
+
+    <h2>What you can do here</h2>
+    <ul>
+      <li>
+        Jump directly to any article. Every article has a stable short URL — for example
+        <a href="/cc/2315"><code>/cc/2315</code></a> for Article 2315 on tort liability.
+      </li>
+      <li>
+        <a href="/search">Search</a> the entire Code, filtered by status and Book.
+      </li>
+      <li>
+        <a href="/cc">Browse</a> by Book → Title → Chapter from the Civil Code root.
+      </li>
+      <li>
+        Cite confidently. Each page offers Bluebook, permalink, and BibTeX forms.
+      </li>
+      <li>
+        <a href="/data">Take the data</a>. Everything here is built from a versioned
+        public-domain release on GitHub. Snapshot
+        <code>{release.tag}</code>.
+      </li>
+    </ul>
+
+    <h2>What this is not</h2>
+    <p>
+      Not legal advice. Not a substitute for the official source — links to the
+      <a href="https://legis.la.gov/legis/Laws.aspx" rel="noopener">Louisiana legislature</a>
+      appear on every article page. No editor's notes, no jurisprudence, no commentary.
+      A reading surface, nothing more.
+    </p>
+  </section>
+</Base>

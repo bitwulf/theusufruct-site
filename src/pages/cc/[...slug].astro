@@ -1,0 +1,231 @@
+---
+// One catch-all renders every page under /cc/:
+//   /cc/{article_number}            → article page (flat, citable)
+//   /cc/{book-N}[/.../]              → container browse page (position-numbered)
+//
+// Both shapes are enumerated explicitly in getStaticPaths so no URL is
+// generated that doesn't correspond to real corpus data.
+
+import Base from '../../layouts/Base.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import StatusPill from '../../components/StatusPill.astro';
+import ArticleBody from '../../components/ArticleBody.astro';
+import CrossRefs from '../../components/CrossRefs.astro';
+import History from '../../components/History.astro';
+import PrevNext from '../../components/PrevNext.astro';
+import CiteDialog from '../../components/CiteDialog.astro';
+import Provenance from '../../components/Provenance.astro';
+
+import {
+  articles,
+  articlesByNumber,
+  allContainers,
+  containersByPath,
+  outgoingRefs,
+  incomingRefs,
+  articleBreadcrumb,
+  containerBreadcrumb,
+  countArticlesIn,
+  stepLabel,
+  stepFullLabel,
+  type Article,
+  type Container,
+} from '../../lib/corpus.ts';
+import { stepSlug } from '../../lib/slug.ts';
+
+export async function getStaticPaths() {
+  const paths: Array<{ params: { slug: string }; props: any }> = [];
+  for (const a of articles) {
+    paths.push({
+      params: { slug: a.article_number },
+      props: { kind: 'article', articleNumber: a.article_number },
+    });
+  }
+  for (const c of allContainers) {
+    paths.push({
+      params: { slug: c.pathSegs.join('/') },
+      props: { kind: 'container', containerKey: c.pathSegs.join('/') },
+    });
+  }
+  return paths;
+}
+
+interface ArticleProps {
+  kind: 'article';
+  articleNumber: string;
+}
+interface ContainerProps {
+  kind: 'container';
+  containerKey: string;
+}
+const props = Astro.props as ArticleProps | ContainerProps;
+
+// ============================================================ ARTICLE ===
+if (props.kind === 'article') {
+  const a = articlesByNumber.get(props.articleNumber)!;
+  const crumbs = articleBreadcrumb(a);
+  const out = outgoingRefs(a.article_number);
+  const inc = incomingRefs(a.article_number);
+  const description = a.heading
+    ? `La. Civ. Code art. ${a.article_number} — ${a.heading}. ${a.breadcrumb}.`
+    : `La. Civ. Code art. ${a.article_number}. ${a.breadcrumb}. Status: ${a.status}.`;
+  Astro.locals = { ...Astro.locals, _renderKind: 'article', _article: a, _crumbs: crumbs, _out: out, _inc: inc, _description: description };
+}
+// =========================================================== CONTAINER ==
+else {
+  const c = containersByPath.get(props.containerKey)!;
+  const crumbs = containerBreadcrumb(c);
+  const counts = countArticlesIn(c);
+  const childContainers = c.children;
+  const description = `${stepFullLabel(c.self)} — ${counts.active} active articles. Louisiana Civil Code, snapshot view.`;
+  Astro.locals = { ...Astro.locals, _renderKind: 'container', _container: c, _crumbs: crumbs, _counts: counts, _childContainers: childContainers, _description: description };
+}
+
+const renderKind = (Astro.locals as any)._renderKind as 'article' | 'container';
+
+// Use bare-ish props for the layout; per-kind data is read below.
+const a = (Astro.locals as any)._article as Article | undefined;
+const c = (Astro.locals as any)._container as Container | undefined;
+const crumbs = (Astro.locals as any)._crumbs;
+const out = (Astro.locals as any)._out as string[] | undefined;
+const inc = (Astro.locals as any)._inc as string[] | undefined;
+const counts = (Astro.locals as any)._counts as { total: number; active: number; repealed: number; blank: number } | undefined;
+const childContainers = (Astro.locals as any)._childContainers as Container[] | undefined;
+const description = (Astro.locals as any)._description as string;
+
+const layoutTitle = renderKind === 'article'
+  ? (a!.heading ? `Art. ${a!.article_number}: ${a!.heading}` : `Art. ${a!.article_number}`)
+  : stepFullLabel(c!.self);
+---
+<Base
+  title={layoutTitle}
+  description={description}
+  narrow={renderKind === 'article'}
+  bodyClass={renderKind === 'article' ? 'page-article' : 'page-container'}
+>
+  {renderKind === 'article' ? (
+    <article class="article" data-pagefind-body>
+      <Breadcrumb crumbs={crumbs} />
+      <header class="article__head">
+        <div class="article__num" data-pagefind-meta={`art:${a!.article_number}`}>
+          Article {a!.article_number}
+          <span data-pagefind-filter={`status:${a!.status}`} hidden>{a!.status}</span>
+          <span data-pagefind-filter={`book:${(a!.hierarchy_path[0]?.level === 'preliminary_title') ? 'Preliminary Title' : 'Book ' + (a!.hierarchy_path[0]?.number ?? '')}`} hidden>book</span>
+        </div>
+        <h1 class="article__title">
+          {a!.heading ?? <em>{a!.status === 'repealed' ? 'Repealed' : 'Reserved'}</em>}
+          <StatusPill status={a!.status} />
+        </h1>
+      </header>
+
+      {a!.text && a!.text.trim() !== '' ? (
+        <ArticleBody text={a!.text} />
+      ) : a!.status === 'repealed' ? (
+        <div class="article__body">
+          <p class="callout">
+            This article has been <strong>repealed</strong>. The slot is preserved in the
+            Code structure; the original text is no longer in force.
+          </p>
+          {a!.acts_citations_raw && (
+            <p class="history__raw">{a!.acts_citations_raw}</p>
+          )}
+        </div>
+      ) : (
+        <div class="article__body">
+          <p class="callout">
+            This article number is <strong>blank</strong>. The Civil Code reserves the
+            slot but contains no enacted text here. The neighbors above and below may be
+            useful.
+          </p>
+        </div>
+      )}
+
+      <section class="article__section" aria-label="Actions">
+        <h2 class="sr-only">Actions</h2>
+        <div class="actions">
+          <button
+            type="button"
+            data-cite-open={`cite-${a!.article_number.replace(/\./g, '-')}`}
+          >Cite</button>
+          <a href={`/cc/${a!.article_number}.json`} download>JSON</a>
+          <a href={`/cc/${a!.article_number}.md`} download>Markdown</a>
+          {a!.source_url && (
+            <a href={a!.source_url} rel="noopener">Source (legis.la.gov)</a>
+          )}
+        </div>
+      </section>
+
+      <CrossRefs heading="References" numbers={out ?? []} />
+      <CrossRefs heading="Cited by" numbers={inc ?? []} />
+      <History citations={a!.acts_citations} raw={a!.acts_citations_raw} />
+      <PrevNext number={a!.article_number} />
+      <Provenance
+        scrapeTimestamp={a!.scrape_timestamp}
+        sourceHash={a!.source_html_hash}
+        sourceUrl={a!.source_url}
+      />
+    </article>
+    <CiteDialog number={a!.article_number} />
+  ) : (
+    <section class="container-page">
+      <Breadcrumb crumbs={crumbs} />
+      <header class="container-page__head">
+        <div class="container-page__kicker">{stepLabel(c!.self)}</div>
+        <h1 class="container-page__title">{c!.name}</h1>
+        <p class="container-page__meta">
+          Articles {c!.range_start}–{c!.range_end}
+          {' · '}
+          {counts!.active} active
+          {counts!.repealed > 0 && ` · ${counts!.repealed} repealed`}
+          {counts!.blank > 0 && ` · ${counts!.blank} blank`}
+        </p>
+      </header>
+
+      {childContainers && childContainers.length > 0 && (
+        <section>
+          <h2>Subdivisions</h2>
+          <ul class="child-list">
+            {childContainers.map((child) => {
+              const ck = child.pathSegs.join('/');
+              const cn = countArticlesIn(child);
+              return (
+                <li class="child-list__item">
+                  <a href={`/cc/${ck}`}>
+                    <div class="child-list__lvl">{stepLabel(child.self)}</div>
+                    <div class="child-list__name">{child.name}</div>
+                    <div class="child-list__meta">
+                      Arts. {child.range_start}–{child.range_end} · {cn.active} active
+                      {cn.repealed > 0 && ` · ${cn.repealed} repealed`}
+                      {cn.blank > 0 && ` · ${cn.blank} blank`}
+                    </div>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+
+      {c!.articleNumbers.length > 0 && (
+        <section>
+          <h2>Articles</h2>
+          <ul class="articles-grid">
+            {c!.articleNumbers.map((num) => {
+              const art = articlesByNumber.get(num);
+              const status = art?.status ?? 'blank';
+              return (
+                <li>
+                  <a href={`/cc/${num}`} data-status={status}>
+                    <span class="num">Art. {num}</span>
+                    {art?.heading && <span class="heading-line">{art.heading}</span>}
+                    <span class="status">{status}</span>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+    </section>
+  )}
+</Base>

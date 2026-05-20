@@ -14,10 +14,10 @@
   --ink: #181613;
   --ink-soft: #4c4843;
   --ink-mute: #6f6962;
-  --accent: #3d4d1c;     /* dark forest-olive */
-  --accent-soft: #4d6028;
-  --link: #3d4d1c;
-  --link-visited: #2e3c14;
+  --accent: #006747;     /* Tulane Dark Green (PMS 342 C) */
+  --accent-soft: #0a7d57;
+  --link: #006747;
+  --link-visited: #004b34;
   --status-active: #2c5e2e;
   --status-repealed: #7a3a1f;
   --status-blank: #6b6660;
@@ -49,10 +49,10 @@
   --ink: #e8e6e0;
   --ink-soft: #c4bfb6;
   --ink-mute: #8a847c;
-  --accent: #92a85e;       /* darker olive for dark mode */
-  --accent-soft: #7a9048;
-  --link: #92a85e;
-  --link-visited: #849855;
+  --accent: #3eb085;       /* lifted Tulane green for dark mode */
+  --accent-soft: #2e9c72;
+  --link: #3eb085;
+  --link-visited: #4ab891;
   --status-active: #93c393;
   --status-repealed: #d49b75;
   --status-blank: #a39d94;
@@ -67,10 +67,10 @@
     --ink: #e8e6e0;
     --ink-soft: #c4bfb6;
     --ink-mute: #8a847c;
-    --accent: #92a85e;
-    --accent-soft: #7a9048;
-    --link: #92a85e;
-    --link-visited: #849855;
+    --accent: #3eb085;
+    --accent-soft: #2e9c72;
+    --link: #3eb085;
+    --link-visited: #4ab891;
     --status-active: #93c393;
     --status-repealed: #d49b75;
     --status-blank: #a39d94;

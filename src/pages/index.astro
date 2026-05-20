@@ -9,10 +9,19 @@ const activeArticles = manifest.totals.by_status.active ?? 0;
   searchable={false}
 >
   <section class="hero">
+    <img
+      src="/usufruct-icon.png"
+      alt=""
+      class="hero__icon"
+      width="128"
+      height="128"
+      decoding="async"
+      fetchpriority="high"
+    />
     <h1 class="hero__title"><span class="mark">Usufruct</span></h1>
     <p class="hero__sub">
-      The Louisiana Civil Code as a structured, citable web artifact —
-      readable for humans, retrievable for machines.
+      The Louisiana Civil Code as structured data<br />
+      readable for humans, retrievable for machines.<br />
       {activeArticles.toLocaleString()} active articles. Public domain.
     </p>
     <div class="hero__cta">

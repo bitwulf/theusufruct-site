@@ -225,10 +225,19 @@ li { margin-bottom: var(--space-2); }
   color: var(--ink);
   text-decoration: none;
   letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
 }
 .site-header__brand .mark {
   color: var(--accent);
   font-style: italic;
+}
+.site-header__logo {
+  width: 28px;
+  height: 28px;
+  display: block;
+  flex: 0 0 auto;
 }
 .site-header__nav {
   display: flex;
@@ -707,6 +716,12 @@ li { margin-bottom: var(--space-2); }
   padding: var(--space-7) 0 var(--space-6);
   border-bottom: 1px solid var(--rule);
   margin-bottom: var(--space-7);
+}
+.hero__icon {
+  width: clamp(96px, 8vw + 64px, 144px);
+  height: auto;
+  display: block;
+  margin: 0 auto var(--space-4);
 }
 .hero__title {
   font-size: clamp(2rem, 1.4rem + 2.4vw, 3rem);

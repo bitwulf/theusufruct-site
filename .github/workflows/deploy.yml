@@ -17,7 +17,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
 
@@ -41,6 +41,10 @@ jobs:
           AWS_DEFAULT_REGION: auto
           R2_ENDPOINT: https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
         run: |
+          # Bump concurrent transfers — default 10 is glacial for ~50K
+          # changed HTML files on a content-tag bump.
+          aws configure set default.s3.max_concurrent_requests 64
+          aws configure set default.s3.max_queue_size 10000
           aws s3 sync dist/ s3://theusufruct-prod/ \
             --endpoint-url "$R2_ENDPOINT" \
             --delete \

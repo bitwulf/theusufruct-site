@@ -30,7 +30,7 @@ import {
   stepFullLabel,
   type Article,
   type Container,
-} from '../../lib/corpus.ts';
+} from '../../lib/cc.ts';
 import { stepSlug } from '../../lib/slug.ts';
 
 export async function getStaticPaths() {
@@ -110,6 +110,7 @@ const layoutTitle = renderKind === 'article'
         <div class="article__num" data-pagefind-meta={`art:${a!.article_number}`}>
           Article {a!.article_number}
           <span data-pagefind-filter={`status:${a!.status}`} hidden>{a!.status}</span>
+          <span data-pagefind-filter={`corpus:cc`} hidden>cc</span>
           <span data-pagefind-filter={`book:${(a!.hierarchy_path[0]?.level === 'preliminary_title') ? 'Preliminary Title' : 'Book ' + (a!.hierarchy_path[0]?.number ?? '')}`} hidden>book</span>
         </div>
         <h1 class="article__title">

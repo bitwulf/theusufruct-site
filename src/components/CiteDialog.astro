@@ -1,15 +1,32 @@
 ---
-import { citationFor } from '../lib/cite.ts';
+import { citationFor, lrsCitation } from '../lib/cite.ts';
 
-export interface Props {
+export interface CcProps {
   number: string;
+  corpus?: 'cc';
 }
-const { number } = Astro.props;
-const c = citationFor(number);
-const dlgId = `cite-${number.replace(/\./g, '-')}`;
+export interface RsProps {
+  corpus: 'rs';
+  title: string;
+  section: string;
+}
+export type Props = CcProps | RsProps;
+
+const props = Astro.props as Props;
+const isRs = props.corpus === 'rs';
+
+const c = isRs
+  ? lrsCitation((props as RsProps).title, (props as RsProps).section)
+  : citationFor((props as CcProps).number);
+const dlgId = isRs
+  ? `cite-rs-${(props as RsProps).title}-${(props as RsProps).section.replace(/\./g, '-')}`
+  : `cite-${(props as CcProps).number.replace(/\./g, '-')}`;
+const titleText = isRs
+  ? `Cite R.S. ${(props as RsProps).title}:${(props as RsProps).section}`
+  : `Cite Article ${(props as CcProps).number}`;
 ---
 <dialog class="cite-dialog" id={dlgId} aria-labelledby={`${dlgId}-title`}>
-  <h2 id={`${dlgId}-title`}>Cite Article {number}</h2>
+  <h2 id={`${dlgId}-title`}>{titleText}</h2>
 
   <div class="cite-block">
     <div class="cite-block__label">Bluebook</div>

@@ -1,6 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
-import { release, manifest } from '../lib/corpus.ts';
+import { manifest } from '../lib/cc.ts';
+import { rsManifest } from '../lib/rs.ts';
+import { release } from '../lib/corpus.ts';
 ---
 <Base
   title="About"
@@ -10,12 +12,13 @@ import { release, manifest } from '../lib/corpus.ts';
     <h1>About</h1>
 
     <p>
-      <strong>Usufruct</strong> publishes the <em>Louisiana Civil Code</em> — the
-      foundational document of Louisiana civil law — as a clean, searchable web
-      artifact. The text is public domain. The project exists because the official source
-      (<a href="https://legis.la.gov" rel="noopener">legis.la.gov</a>) ships the Code as
-      thousands of disconnected ASP.NET pages with no machine-readable export, weak
-      typography, and brittle URLs.
+      <strong>Usufruct</strong> publishes the <em>Louisiana Civil Code</em> and the
+      <em>Louisiana Revised Statutes</em> — together the bulk of Louisiana's enacted
+      law — as a clean, searchable web artifact. The text is public domain. The
+      project exists because the official source
+      (<a href="https://legis.la.gov" rel="noopener">legis.la.gov</a>) ships them as
+      tens of thousands of disconnected ASP.NET pages with no machine-readable
+      export, weak typography, and brittle URLs.
     </p>
 
     <p>
@@ -36,35 +39,41 @@ import { release, manifest } from '../lib/corpus.ts';
     </p>
 
     <p>
-      Active snapshot: <a href={release.releasePage} rel="noopener"><code>{release.tag}</code></a>
-      ({manifest.totals.articles_emitted.toLocaleString()} article records;
-      {' '}{manifest.totals.containers} containers).
+      Active snapshot: <a href={release.releasePage} rel="noopener"><code>{release.tag}</code></a>.
+      Civil Code: {manifest.totals.articles_emitted.toLocaleString()} article records
+      across {manifest.totals.containers} containers. Revised Statutes:
+      {' '}{rsManifest.totals.sections_emitted.toLocaleString()} section records
+      across {rsManifest.totals.containers} containers.
     </p>
 
     <h2>Methodology</h2>
     <ul>
       <li>
-        The Civil Code is the union of <em>Preliminary Title</em> and Books I–IV. Every
-        article slot in that union is rendered as a page — including repealed slots and
-        slots that the Code structure reserves but does not fill. A reader Googling
-        "la civ code 2310" lands somewhere real, not a 404.
+        The <em>Civil Code</em> is the union of <em>Preliminary Title</em> and Books
+        I–IV. The <em>Revised Statutes</em> are Titles 1–56 (with letter-suffixed and
+        renumbered titles). Every slot in either corpus is rendered as a page,
+        including repealed and reserved slots. A reader Googling "la civ code 2310"
+        or "la rev stat 14:30" lands somewhere real, not a 404.
       </li>
       <li>
-        Article URLs are <strong>flat and citable</strong>: <code>/cc/{`{`}number{`}`}</code>.
-        Hierarchical URLs are for browsing only. Article URLs do not change when names or
-        editorial structure change upstream.
+        Civil Code article URLs are <strong>flat and citable</strong>:
+        <code>/cc/{`{`}number{`}`}</code>. Revised Statutes section URLs are
+        Title-keyed: <code>/rs/title-{`{`}title{`}`}/section-{`{`}number{`}`}</code>,
+        since RS section numbers are not globally unique. Hierarchical URLs are for
+        browsing only. Permalinks do not change when names or editorial structure
+        change upstream.
       </li>
       <li>
-        Cross-references between articles come from the corpus's
+        Cross-references between articles and sections come from each corpus's
         <code>citation_edges.csv</code>. "References" lists outgoing edges; "Cited by"
         lists incoming. Both are stable per snapshot.
       </li>
       <li>
         Legislative history is rendered from structured <code>acts_citations</code>;
-        when those are unavailable for an article, the raw history string is shown.
+        when those are unavailable, the raw history string is shown.
       </li>
       <li>
-        Each article page exposes a one-line provenance footer with the snapshot tag,
+        Each page exposes a one-line provenance footer with the snapshot tag,
         scrape timestamp, and a truncated source-HTML hash. A change in the upstream
         source flips the hash, so divergence is visible.
       </li>
@@ -72,10 +81,13 @@ import { release, manifest } from '../lib/corpus.ts';
 
     <h2>Citing</h2>
     <p>
-      Every article page has a <strong>Cite</strong> action that produces three forms:
+      Every article and section page has a <strong>Cite</strong> action that produces
+      three forms:
     </p>
     <ul>
-      <li><strong>Bluebook</strong>: <code>La. Civ. Code art. 2315 (2026).</code></li>
+      <li><strong>Bluebook</strong>: <code>La. Civ. Code art. 2315 (2026).</code> for
+        Civil Code articles; <code>La. Rev. Stat. Ann. § 14:30 (2026).</code> for
+        Revised Statutes sections.</li>
       <li><strong>Permalink</strong>: the canonical absolute URL on theusufruct.com.</li>
       <li><strong>BibTeX</strong>: a <code>@misc</code> entry including the snapshot tag.</li>
     </ul>

@@ -1,10 +1,19 @@
 ---
-import { articlesByNumber } from '../lib/corpus.ts';
+// Cross-reference list. Renders a list of citation links to other sections
+// or articles, with hover-title hints and per-status styling.
+//
+// For CC, items are article numbers ("2315"); for LRS, items are colon-keyed
+// section IDs ("14:30").
+
+import { articlesByNumber } from '../lib/cc.ts';
+import { sectionsByKey } from '../lib/rs.ts';
+
 export interface Props {
   heading: string;
   numbers: string[];
+  corpus?: 'cc' | 'rs';
 }
-const { heading, numbers } = Astro.props;
+const { heading, numbers, corpus = 'cc' } = Astro.props;
 ---
 <section class="article__section">
   <h2>{heading}</h2>
@@ -13,6 +22,27 @@ const { heading, numbers } = Astro.props;
   ) : (
     <ul class="refs-list">
       {numbers.map((n) => {
+        if (corpus === 'rs') {
+          const s = sectionsByKey.get(n);
+          const heading = s?.heading ?? '';
+          const status = s?.status ?? 'blank';
+          const [title, section] = n.split(':');
+          const href = title && section
+            ? `/rs/title-${title}/section-${section}`
+            : '#';
+          const label = `R.S. ${n}`;
+          return (
+            <li>
+              <a
+                href={href}
+                title={heading ? `${label} — ${heading}` : label}
+                data-status={status}
+              >
+                {label}
+              </a>
+            </li>
+          );
+        }
         const a = articlesByNumber.get(n);
         const heading = a?.heading ?? '';
         const status = a?.status ?? 'blank';

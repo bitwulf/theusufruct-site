@@ -1,0 +1,53 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import { rsRootContainers, countSectionsIn, rsManifest, rsStepLabel } from '../../lib/rs.ts';
+import { release } from '../../lib/corpus.ts';
+
+const totalSections = rsManifest.totals.sections_emitted;
+const activeSections = rsManifest.totals.by_status.active ?? 0;
+---
+<Base
+  title="Louisiana Revised Statutes"
+  description="The Louisiana Revised Statutes as a readable, citable web artifact. Titles 1–56 (and renumbered titles), with stable per-section URLs."
+>
+  <section>
+    <Breadcrumb crumbs={[{ label: 'Revised Statutes', href: '/rs' }]} />
+    <header class="container-page__head">
+      <div class="container-page__kicker">Revised Statutes</div>
+      <h1 class="container-page__title">Louisiana Revised Statutes</h1>
+      <p class="container-page__meta">
+        {totalSections.toLocaleString()} section records · {activeSections.toLocaleString()} active
+        · snapshot <a href={release.releasePage} rel="noopener">{release.tag}</a>
+      </p>
+    </header>
+
+    <p class="prose" style="margin-bottom: var(--space-6); max-width: 60ch;">
+      Browse by Title below, jump directly to a section (every section has a stable
+      URL, e.g. <a href="/rs/title-14/section-30"><code>/rs/title-14/section-30</code></a>),
+      or <a href="/search">search the full text</a>.
+    </p>
+
+    <ul class="child-list">
+      {rsRootContainers.map((c) => {
+        const cn = countSectionsIn(c);
+        return (
+          <li class="child-list__item">
+            <a href={c.url}>
+              <div class="child-list__lvl">{rsStepLabel(c.self)}</div>
+              <div class="child-list__name">{c.name}</div>
+              <div class="child-list__meta">
+                {c.section_range
+                  ? `§§ ${c.section_range[0]}–${c.section_range[1]} · `
+                  : ''}{cn.active} active
+                {cn.repealed > 0 && ` · ${cn.repealed} repealed`}
+                {cn.reserved > 0 && ` · ${cn.reserved} reserved`}
+                {cn.blank > 0 && ` · ${cn.blank} blank`}
+              </div>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+  </section>
+</Base>

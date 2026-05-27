@@ -1,6 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
-import { release, manifest } from '../lib/corpus.ts';
+import { manifest } from '../lib/cc.ts';
+import { rsManifest } from '../lib/rs.ts';
+import { release } from '../lib/corpus.ts';
 ---
 <Base
   title="Data"
@@ -18,9 +20,11 @@ import { release, manifest } from '../lib/corpus.ts';
       <p style="margin: 0 0 var(--space-2);">
         <strong>Current snapshot:</strong>
         <a href={release.releasePage} rel="noopener"><code>{release.tag}</code></a>
-        — {manifest.totals.articles_emitted.toLocaleString()} article records,
-        {' '}{manifest.totals.containers} containers,
-        generated {release.generatedAt.replace('T', ' ').replace('Z', ' UTC')}.
+        — Civil Code: {manifest.totals.articles_emitted.toLocaleString()} article
+        records, {manifest.totals.containers} containers. Revised Statutes:
+        {' '}{rsManifest.totals.sections_emitted.toLocaleString()} section records,
+        {' '}{rsManifest.totals.containers} containers. Generated
+        {' '}{release.generatedAt.replace('T', ' ').replace('Z', ' UTC')}.
       </p>
       <p style="margin: 0;">
         <a href={release.archiveUrl} rel="noopener">Download zip</a>
@@ -32,23 +36,41 @@ import { release, manifest } from '../lib/corpus.ts';
     </div>
 
     <h2>What's in the archive</h2>
+    <p>
+      The archive contains the Civil Code at the root and the Revised Statutes under
+      <code>rs/</code>. Same shapes, parallel layouts.
+    </p>
+    <h3>Civil Code (root)</h3>
     <dl>
       <dt><code>articles.jsonl</code></dt>
-      <dd>One JSON record per article (~3,623 lines). The canonical form.</dd>
+      <dd>One JSON record per article ({manifest.totals.articles_emitted.toLocaleString()} lines). The canonical form.</dd>
       <dt><code>articles/&lt;number&gt;.json</code></dt>
       <dd>Same records, one file per article — easier random access.</dd>
       <dt><code>markdown/&lt;number&gt;.md</code></dt>
-      <dd>Per-article markdown with YAML frontmatter, for tools that read markdown.</dd>
+      <dd>Per-article markdown with YAML frontmatter.</dd>
       <dt><code>tree.json</code></dt>
-      <dd>Book → Title → Chapter hierarchy with article numbers attached at each leaf.</dd>
+      <dd>Book → Title → Chapter hierarchy with article numbers at each leaf.</dd>
       <dt><code>hierarchy.json</code></dt>
-      <dd>Flat list of all {manifest.totals.containers} hierarchy containers, with parent chains.</dd>
+      <dd>Flat list of {manifest.totals.containers} hierarchy containers with parent chains.</dd>
       <dt><code>citation_edges.csv</code></dt>
-      <dd>Cross-references between articles (<code>src → dst</code>) extracted from article body text.</dd>
-      <dt><code>chunks.jsonl</code></dt>
-      <dd>Pre-split article chunks suitable for RAG / embedding pipelines.</dd>
+      <dd>Cross-references between articles, extracted from article body text.</dd>
       <dt><code>manifest.json</code></dt>
       <dd>Schema version, totals, per-status counts, <code>generated_at</code> timestamp.</dd>
+    </dl>
+    <h3>Revised Statutes (<code>rs/</code>)</h3>
+    <dl>
+      <dt><code>rs/sections.jsonl</code></dt>
+      <dd>One JSON record per section ({rsManifest.totals.sections_emitted.toLocaleString()} lines). Section identity is (title_number, section_number); the official citation form is in the <code>citation</code> field (e.g. <code>"R.S. 14:30"</code>).</dd>
+      <dt><code>rs/sections/rs_&lt;title&gt;_&lt;section&gt;.json</code></dt>
+      <dd>Same records, one file per section. Decimal points in the section number are encoded as underscores (e.g. <code>rs_14_30_1.json</code> for R.S. 14:30.1).</dd>
+      <dt><code>rs/markdown/title-&lt;N&gt;/&lt;section&gt;.md</code></dt>
+      <dd>Per-section markdown, partitioned by Title. Same underscore-for-decimal encoding in the filename.</dd>
+      <dt><code>rs/tree.json</code></dt>
+      <dd>Title → Chapter → Part → Subpart hierarchy with section numbers at each leaf. Includes <code>section_range</code>, <code>is_repealed</code>, and <code>is_reserved</code> per node.</dd>
+      <dt><code>rs/citation_edges.csv</code></dt>
+      <dd>Cross-references; columns include source and destination corpus, so RS↔CC edges are addressable too.</dd>
+      <dt><code>rs/manifest.json</code></dt>
+      <dd>Schema version, totals, per-status counts, per-title completeness, <code>generated_at</code>.</dd>
     </dl>
 
     <h2>Verifying</h2>
@@ -62,13 +84,16 @@ shasum -a 256 -c ${release.tag.startsWith('20') ? 'usufruct-' + release.tag + '.
 # Unpack
 unzip usufruct-${release.tag}.zip`}</code></pre>
 
-    <h2>Fetching by article number</h2>
+    <h2>Fetching by article or section</h2>
     <p>
-      This site exposes each article as both JSON and Markdown for direct fetching, no
-      release download required:
+      This site exposes each Civil Code article and Revised Statutes section as both
+      JSON and Markdown for direct fetching, no release download required:
     </p>
     <pre><code>{`curl https://theusufruct.com/cc/2315.json
-curl https://theusufruct.com/cc/2315.md`}</code></pre>
+curl https://theusufruct.com/cc/2315.md
+
+curl https://theusufruct.com/rs/title-14/section-30.json
+curl https://theusufruct.com/rs/title-14/section-30.md`}</code></pre>
     <p>
       These mirror the records inside the release archive. For programmatic access at
       scale, download the archive once and read from disk — it is the data, not an API.

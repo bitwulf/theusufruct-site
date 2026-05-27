@@ -21,6 +21,8 @@ export function romanToInt(roman: string): number | null {
 }
 
 // Levels we use as URL segments. Top-level "preliminary_title" is special-cased.
+// `code_*` variants are used by the LRS tree for embedded sub-codes (e.g.
+// Code of Civil Procedure within the Revised Statutes).
 export type ContainerLevel =
   | 'preliminary_title'
   | 'book'
@@ -28,7 +30,14 @@ export type ContainerLevel =
   | 'chapter'
   | 'section'
   | 'subsection'
-  | 'paragraph';
+  | 'paragraph'
+  | 'part'
+  | 'subpart'
+  | 'subtitle'
+  | 'subgroup'
+  | 'code_book'
+  | 'code_title'
+  | 'code_preliminary_title';
 
 export interface HierStep {
   level: string;
@@ -45,6 +54,13 @@ export function levelSlug(level: string): string {
     case 'section': return 'section';
     case 'subsection': return 'subsection';
     case 'paragraph': return 'paragraph';
+    case 'part': return 'part';
+    case 'subpart': return 'subpart';
+    case 'subtitle': return 'subtitle';
+    case 'subgroup': return 'subgroup';
+    case 'code_book': return 'code-book';
+    case 'code_title': return 'code-title';
+    case 'code_preliminary_title': return 'code-preliminary-title';
     default: return level.replace(/_/g, '-');
   }
 }
@@ -68,18 +84,23 @@ export function stepSlug(step: HierStep): string {
   return `${levelSlug(step.level)}-${digit}`;
 }
 
-// Full container URL: `/cc/book-3/title-5/chapter-3`
-export function containerPath(ancestors: HierStep[], self: HierStep): string {
+// Full container URL with a corpus prefix, e.g.
+// `/cc/book-3/title-5/chapter-3` or `/rs/title-14/chapter-1`.
+export function containerPath(
+  prefix: string,
+  ancestors: HierStep[],
+  self: HierStep,
+): string {
   const segments = [...ancestors, self].map(stepSlug);
-  return `/cc/${segments.join('/')}`;
+  return `${prefix}/${segments.join('/')}`;
 }
 
 export function pathSegments(ancestors: HierStep[], self: HierStep): string[] {
   return [...ancestors, self].map(stepSlug);
 }
 
-// Article URL: flat. `/cc/2315` or `/cc/103.1`.
-export function articlePath(articleNumber: string): string {
+// CC article URL: flat. `/cc/2315` or `/cc/103.1`.
+export function ccArticlePath(articleNumber: string): string {
   return `/cc/${encodeArticleNumber(articleNumber)}`;
 }
 
@@ -87,6 +108,12 @@ export function encodeArticleNumber(n: string): string {
   // Article numbers are like "2315" or "103.1". Keep dots; everything else is
   // already URL-safe.
   return n;
+}
+
+// LRS section URL: level-prefixed. `/rs/title-14/section-30` or
+// `/rs/title-14/section-30.3`.
+export function rsSectionPath(titleNumber: string, sectionNumber: string): string {
+  return `/rs/title-${titleNumber}/section-${sectionNumber}`;
 }
 
 // Numeric ordering for prev/next. "103" < "103.1" < "104".

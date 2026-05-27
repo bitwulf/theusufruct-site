@@ -14,39 +14,36 @@ import Base from '../layouts/Base.astro';
       This page is a public mirror of the highlights affecting this site.
     </p>
 
-    <h2>Shipped (v1 — this site)</h2>
+    <h2>Shipped</h2>
     <ul>
       <li>Louisiana Civil Code, all article slots rendered (active, repealed, blank).</li>
       <li>Stable flat URLs at <code>/cc/&#123;number&#125;</code> with a citation popover on every page.</li>
-      <li>Browseable hierarchy at <code>/cc/&#123;book&#125;/&#123;title&#125;/&#123;chapter&#125;</code> with position-numbered slugs.</li>
-      <li>Cross-references and reverse-cross-references per article, from the corpus citation graph.</li>
-      <li>Pagefind full-text search, filterable by status and Book.</li>
+      <li>Browseable Civil Code hierarchy at <code>/cc/&#123;book&#125;/&#123;title&#125;/&#123;chapter&#125;</code> with position-numbered slugs.</li>
+      <li>Louisiana Revised Statutes (Titles 1–56 plus letter-suffixed and renumbered titles), all section slots rendered, at <code>/rs/title-&#123;N&#125;/section-&#123;X&#125;</code>.</li>
+      <li>Browseable Revised Statutes hierarchy at <code>/rs/title-&#123;N&#125;/chapter-&#123;Y&#125;/part-&#123;Z&#125;/…</code> with position-numbered slugs.</li>
+      <li>Cross-references and reverse-cross-references per article and section, from the corpus citation graph.</li>
+      <li>Pagefind full-text search across both corpora, filterable by corpus, status, and location.</li>
       <li>Dark mode, print stylesheet, no tracking, self-hosted typography.</li>
-      <li>Per-article JSON / Markdown endpoints for direct programmatic access.</li>
-      <li>Atom feed announcing each new corpus snapshot.</li>
+      <li>Per-article and per-section JSON / Markdown endpoints for direct programmatic access.</li>
+      <li>Atom feed announcing each new corpus snapshot (CC + LRS bundled).</li>
     </ul>
 
     <h2>Planned (corpus side, then site)</h2>
     <ul>
       <li>
-        <strong>Louisiana Revised Statutes (LRS).</strong> The wider statutory corpus —
-        Titles 1–56. When the corpus ships LRS, this site will mount it at
-        <code>/rs/&#123;title&#125;/&#123;section&#125;</code> using the same article-page
-        template. The IA is already prepared.
-      </li>
-      <li>
         <strong>Children's Code, Code of Criminal Procedure, Code of Evidence.</strong>
         Each lives at its own corpus prefix; each gets its own root on this site
-        (<code>/childrens-code/…</code> etc.).
+        (<code>/childrens-code/…</code> etc.). The dual-corpus IA shipped with the
+        Revised Statutes rollout makes adding these a data-plumbing task, not a redesign.
       </li>
       <li>
         <strong>Citation graph view.</strong> A standalone page visualizing the in/out
-        reference network. Deferred from v1; tracked in upstream issues.
+        reference network across both corpora. Deferred; tracked in upstream issues.
       </li>
       <li>
         <strong>Historical snapshots.</strong> A time-machine view that lets readers see
-        how an article read at a previous snapshot tag. Once a second snapshot exists,
-        this becomes useful.
+        how an article or section read at a previous snapshot tag. Once a second
+        snapshot exists, this becomes useful.
       </li>
     </ul>
 

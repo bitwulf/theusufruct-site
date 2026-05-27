@@ -2,7 +2,7 @@
 // corpus so consumers can fetch single articles without downloading the release.
 
 import type { APIRoute } from 'astro';
-import { articles, articlesByNumber } from '../../lib/corpus.ts';
+import { articles, articlesByNumber } from '../../lib/cc.ts';
 
 export async function getStaticPaths() {
   return articles.map((a) => ({ params: { article: a.article_number } }));

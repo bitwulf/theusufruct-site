@@ -5,7 +5,8 @@
 import type { APIRoute } from 'astro';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ACTIVE_TAG, articles, articlesByNumber, markdownPath } from '../../lib/corpus.ts';
+import { articles, articlesByNumber, markdownPath } from '../../lib/cc.ts';
+import { ACTIVE_TAG } from '../../lib/corpus.ts';
 
 export async function getStaticPaths() {
   return articles.map((a) => ({ params: { article: a.article_number } }));

@@ -1,0 +1,241 @@
+---
+// One catch-all renders every page under /rs/:
+//   /rs/title-{N}/section-{X}     → section page (citable)
+//   /rs/title-{N}[/.../]          → container browse page (position-numbered)
+
+import Base from '../../layouts/Base.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import StatusPill from '../../components/StatusPill.astro';
+import ArticleBody from '../../components/ArticleBody.astro';
+import CrossRefs from '../../components/CrossRefs.astro';
+import History from '../../components/History.astro';
+import PrevNext from '../../components/PrevNext.astro';
+import CiteDialog from '../../components/CiteDialog.astro';
+import Provenance from '../../components/Provenance.astro';
+
+import {
+  sections,
+  sectionsByKey,
+  rsAllContainers,
+  rsContainersByPath,
+  rsOutgoingRefs,
+  rsIncomingRefs,
+  sectionBreadcrumb,
+  rsContainerBreadcrumb,
+  countSectionsIn,
+  rsStepLabel,
+  rsStepFullLabel,
+  type Section,
+  type RsContainer,
+} from '../../lib/rs.ts';
+
+export async function getStaticPaths() {
+  const paths: Array<{ params: { slug: string }; props: any }> = [];
+  for (const s of sections) {
+    paths.push({
+      params: { slug: `title-${s.title_number}/section-${s.section_number}` },
+      props: {
+        kind: 'section',
+        title: s.title_number,
+        section: s.section_number,
+      },
+    });
+  }
+  for (const c of rsAllContainers) {
+    paths.push({
+      params: { slug: c.pathSegs.join('/') },
+      props: { kind: 'container', containerKey: c.pathSegs.join('/') },
+    });
+  }
+  return paths;
+}
+
+interface SectionProps {
+  kind: 'section';
+  title: string;
+  section: string;
+}
+interface ContainerProps {
+  kind: 'container';
+  containerKey: string;
+}
+const props = Astro.props as SectionProps | ContainerProps;
+
+let renderKind: 'section' | 'container';
+let s: Section | undefined;
+let c: RsContainer | undefined;
+let crumbs;
+let out: string[] | undefined;
+let inc: string[] | undefined;
+let counts;
+let childContainers: RsContainer[] | undefined;
+let description: string;
+let layoutTitle: string;
+
+if (props.kind === 'section') {
+  s = sectionsByKey.get(`${props.title}:${props.section}`)!;
+  crumbs = sectionBreadcrumb(s);
+  out = rsOutgoingRefs(props.title, props.section);
+  inc = rsIncomingRefs(props.title, props.section);
+  description = s.heading
+    ? `${s.citation} — ${s.heading}. ${s.breadcrumb}.`
+    : `${s.citation}. ${s.breadcrumb}. Status: ${s.status}.`;
+  layoutTitle = s.heading
+    ? `${s.citation}: ${s.heading}`
+    : s.citation;
+  renderKind = 'section';
+} else {
+  c = rsContainersByPath.get(props.containerKey)!;
+  crumbs = rsContainerBreadcrumb(c);
+  counts = countSectionsIn(c);
+  childContainers = c.children;
+  description = `${rsStepFullLabel(c.self)} — ${counts.active} active sections. Louisiana Revised Statutes, snapshot view.`;
+  layoutTitle = rsStepFullLabel(c.self);
+  renderKind = 'container';
+}
+---
+<Base
+  title={layoutTitle}
+  description={description}
+  narrow={renderKind === 'section'}
+  bodyClass={renderKind === 'section' ? 'page-article' : 'page-container'}
+>
+  {renderKind === 'section' ? (
+    <article class="article" data-pagefind-body>
+      <Breadcrumb crumbs={crumbs} />
+      <header class="article__head">
+        <div class="article__num" data-pagefind-meta={`rs:${s!.title_number}:${s!.section_number}`}>
+          {s!.citation}
+          <span data-pagefind-filter={`status:${s!.status}`} hidden>{s!.status}</span>
+          <span data-pagefind-filter={`corpus:rs`} hidden>rs</span>
+          <span data-pagefind-filter={`title:Title ${s!.title_number}`} hidden>title</span>
+        </div>
+        <h1 class="article__title">
+          {s!.heading ?? <em>{s!.status === 'repealed' ? 'Repealed' : 'Reserved'}</em>}
+          <StatusPill status={s!.status} />
+        </h1>
+      </header>
+
+      {s!.text && s!.text.trim() !== '' ? (
+        <ArticleBody text={s!.text} />
+      ) : s!.status === 'repealed' ? (
+        <div class="article__body">
+          <p class="callout">
+            This section has been <strong>repealed</strong>. The slot is preserved in the
+            Title structure; the original text is no longer in force.
+          </p>
+          {s!.acts_citations_raw && (
+            <p class="history__raw">{s!.acts_citations_raw}</p>
+          )}
+        </div>
+      ) : s!.status === 'reserved' ? (
+        <div class="article__body">
+          <p class="callout">
+            This section is <strong>reserved</strong> by the Title's structure but
+            contains no enacted text.
+          </p>
+        </div>
+      ) : (
+        <div class="article__body">
+          <p class="callout">
+            This section is <strong>blank</strong>. The Title reserves the slot but
+            contains no enacted text here. The neighbors above and below may be
+            useful.
+          </p>
+        </div>
+      )}
+
+      <section class="article__section" aria-label="Actions">
+        <h2 class="sr-only">Actions</h2>
+        <div class="actions">
+          <button
+            type="button"
+            data-cite-open={`cite-rs-${s!.title_number}-${s!.section_number.replace(/\./g, '-')}`}
+          >Cite</button>
+          <a href={`/rs/title-${s!.title_number}/section-${s!.section_number}.json`} download>JSON</a>
+          <a href={`/rs/title-${s!.title_number}/section-${s!.section_number}.md`} download>Markdown</a>
+          {s!.source_url && (
+            <a href={s!.source_url} rel="noopener">Source (legis.la.gov)</a>
+          )}
+        </div>
+      </section>
+
+      <CrossRefs heading="References" numbers={out ?? []} corpus="rs" />
+      <CrossRefs heading="Cited by" numbers={inc ?? []} corpus="rs" />
+      <History citations={s!.acts_citations} raw={s!.acts_citations_raw} />
+      <PrevNext corpus="rs" title={s!.title_number} section={s!.section_number} />
+      <Provenance
+        scrapeTimestamp={s!.scrape_timestamp}
+        sourceHash={s!.source_html_hash}
+        sourceUrl={s!.source_url}
+      />
+    </article>
+    <CiteDialog corpus="rs" title={s!.title_number} section={s!.section_number} />
+  ) : (
+    <section class="container-page">
+      <Breadcrumb crumbs={crumbs} />
+      <header class="container-page__head">
+        <div class="container-page__kicker">{rsStepLabel(c!.self)}</div>
+        <h1 class="container-page__title">{c!.name}</h1>
+        <p class="container-page__meta">
+          {c!.section_range
+            ? `Sections ${c!.section_range[0]}–${c!.section_range[1]} · `
+            : ''}
+          {counts!.active} active
+          {counts!.repealed > 0 && ` · ${counts!.repealed} repealed`}
+          {counts!.reserved > 0 && ` · ${counts!.reserved} reserved`}
+          {counts!.blank > 0 && ` · ${counts!.blank} blank`}
+        </p>
+      </header>
+
+      {childContainers && childContainers.length > 0 && (
+        <section>
+          <h2>Subdivisions</h2>
+          <ul class="child-list">
+            {childContainers.map((child) => {
+              const ck = child.pathSegs.join('/');
+              const cn = countSectionsIn(child);
+              return (
+                <li class="child-list__item">
+                  <a href={`/rs/${ck}`}>
+                    <div class="child-list__lvl">{rsStepLabel(child.self)}</div>
+                    <div class="child-list__name">{child.name}</div>
+                    <div class="child-list__meta">
+                      {child.section_range
+                        ? `§§ ${child.section_range[0]}–${child.section_range[1]} · `
+                        : ''}{cn.active} active
+                      {cn.repealed > 0 && ` · ${cn.repealed} repealed`}
+                      {cn.reserved > 0 && ` · ${cn.reserved} reserved`}
+                      {cn.blank > 0 && ` · ${cn.blank} blank`}
+                    </div>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+
+      {c!.sectionNumbers.length > 0 && (
+        <section>
+          <h2>Sections</h2>
+          <ul class="articles-grid">
+            {c!.sectionNumbers.map((num) => {
+              const sec = sectionsByKey.get(`${c!.titleNumber}:${num}`);
+              const status = sec?.status ?? 'blank';
+              return (
+                <li>
+                  <a href={`/rs/title-${c!.titleNumber}/section-${num}`} data-status={status}>
+                    <span class="num">§ {c!.titleNumber}:{num}</span>
+                    {sec?.heading && <span class="heading-line">{sec.heading}</span>}
+                    <span class="status">{status}</span>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+    </section>
+  )}
+</Base>

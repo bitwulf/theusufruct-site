@@ -6,6 +6,28 @@ import { release } from '../../lib/corpus.ts';
 
 const totalSections = rsManifest.totals.sections_emitted;
 const activeSections = rsManifest.totals.by_status.active ?? 0;
+
+// Build the browse list:
+//   1. The LRS tree has 11 orphaned UCC chapters (from Title 9) that
+//      appear at root level. Filter to title-level roots only so they
+//      don't pollute the Title list. Those chapter pages still exist
+//      at /rs/chapter-N for anyone with the direct URL.
+//   2. Two roots collide on /rs/title-2 (one with name "AERONAUTICS"
+//      and zero sections, one with a mangled name but the actual
+//      content). Dedupe by URL, preferring the populated one.
+const titleRoots = rsRootContainers.filter((c) => c.level === 'title');
+const byUrl = new Map<
+  string,
+  { c: (typeof titleRoots)[number]; cn: ReturnType<typeof countSectionsIn> }
+>();
+for (const c of titleRoots) {
+  const cn = countSectionsIn(c);
+  const existing = byUrl.get(c.url);
+  if (!existing || cn.total > existing.cn.total) {
+    byUrl.set(c.url, { c, cn });
+  }
+}
+const browseRoots = Array.from(byUrl.values());
 ---
 <Base
   title="Louisiana Revised Statutes"
@@ -29,25 +51,22 @@ const activeSections = rsManifest.totals.by_status.active ?? 0;
     </p>
 
     <ul class="child-list">
-      {rsRootContainers.map((c) => {
-        const cn = countSectionsIn(c);
-        return (
-          <li class="child-list__item">
-            <a href={c.url}>
-              <div class="child-list__lvl">{rsStepLabel(c.self)}</div>
-              <div class="child-list__name">{c.name}</div>
-              <div class="child-list__meta">
-                {c.section_range
-                  ? `§§ ${c.section_range[0]}–${c.section_range[1]} · `
-                  : ''}{cn.active} active
-                {cn.repealed > 0 && ` · ${cn.repealed} repealed`}
-                {cn.reserved > 0 && ` · ${cn.reserved} reserved`}
-                {cn.blank > 0 && ` · ${cn.blank} blank`}
-              </div>
-            </a>
-          </li>
-        );
-      })}
+      {browseRoots.map(({ c, cn }) => (
+        <li class="child-list__item">
+          <a href={c.url}>
+            <div class="child-list__lvl">{rsStepLabel(c.self)}</div>
+            <div class="child-list__name">{c.name}</div>
+            <div class="child-list__meta">
+              {c.section_range
+                ? `§§ ${c.section_range[0]}–${c.section_range[1]} · `
+                : ''}{cn.active} active
+              {cn.repealed > 0 && ` · ${cn.repealed} repealed`}
+              {cn.reserved > 0 && ` · ${cn.reserved} reserved`}
+              {cn.blank > 0 && ` · ${cn.blank} blank`}
+            </div>
+          </a>
+        </li>
+      ))}
     </ul>
   </section>
 </Base>

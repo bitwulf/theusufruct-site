@@ -35,21 +35,28 @@ jobs:
         run: npm run build
 
       - name: Sync dist/ to R2
+        # Uses rclone (pre-installed on the runner) with --checksum so we
+        # diff by MD5/ETag, not mtime. `aws s3 sync` compares size+mtime,
+        # which marks every freshly-built file as changed and re-uploads
+        # all 211K files on every run. With --checksum, only files whose
+        # bytes actually differ get pushed.
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: auto
-          R2_ENDPOINT: https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          RCLONE_CONFIG_R2_TYPE: s3
+          RCLONE_CONFIG_R2_PROVIDER: Cloudflare
+          RCLONE_CONFIG_R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          RCLONE_CONFIG_R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          RCLONE_CONFIG_R2_ENDPOINT: https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          RCLONE_CONFIG_R2_REGION: auto
         run: |
-          # Bump concurrent transfers — default 10 is glacial for ~50K
-          # changed HTML files on a content-tag bump.
-          aws configure set default.s3.max_concurrent_requests 64
-          aws configure set default.s3.max_queue_size 10000
-          aws s3 sync dist/ s3://theusufruct-prod/ \
-            --endpoint-url "$R2_ENDPOINT" \
-            --delete \
-            --no-progress \
-            --only-show-errors
+          rclone sync dist/ R2:theusufruct-prod/ \
+            --checksum \
+            --transfers 64 \
+            --checkers 64 \
+            --fast-list \
+            --no-update-modtime \
+            --stats=30s \
+            --stats-one-line \
+            -v
 
       - name: Purge Cloudflare cache
         env:

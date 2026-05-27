@@ -1,7 +1,10 @@
 ---
 import Base from '../layouts/Base.astro';
-import { manifest, release } from '../lib/corpus.ts';
+import { manifest } from '../lib/cc.ts';
+import { rsManifest } from '../lib/rs.ts';
+import { release } from '../lib/corpus.ts';
 const activeArticles = manifest.totals.by_status.active ?? 0;
+const activeSections = rsManifest.totals.by_status.active ?? 0;
 ---
 <Base
   title="Usufruct"
@@ -20,12 +23,14 @@ const activeArticles = manifest.totals.by_status.active ?? 0;
     />
     <h1 class="hero__title"><span class="mark">Usufruct</span></h1>
     <p class="hero__sub">
-      The Louisiana Civil Code as structured data<br />
+      Louisiana law as structured data<br />
       readable for humans, retrievable for machines.<br />
-      {activeArticles.toLocaleString()} active articles. Public domain.
+      {activeArticles.toLocaleString()} active Civil Code articles
+      · {activeSections.toLocaleString()} active Revised Statutes sections. Public domain.
     </p>
     <div class="hero__cta">
-      <a class="primary" href="/cc">Read the Code →</a>
+      <a class="primary" href="/cc">Read the Civil Code →</a>
+      <a class="primary" href="/rs">Read the Statutes →</a>
       <a href="/search">Search</a>
       <a href="/data">Get the data</a>
     </div>
@@ -34,12 +39,16 @@ const activeArticles = manifest.totals.by_status.active ?? 0;
   <section class="prose">
     <h2>What this is</h2>
     <p>
-      Louisiana is the only U.S. state whose legal system stems from a codified civil-law
-      tradition — a single document, organized by Books, Titles, Chapters, and Articles,
-      governing persons, property, obligations, and successions. The official source
-      ships it as ~2,500 separate ASP.NET pages with no machine-readable export. This
-      site renders a structured, versioned, hash-verified release of that Code —
-      readable for humans, retrievable for machines.
+      Louisiana is the only U.S. state whose private law is a codified civil-law
+      tradition. The <a href="/cc">Civil Code</a> is the foundational document —
+      organized by Books, Titles, Chapters, and Articles — governing persons,
+      property, obligations, and successions. The <a href="/rs">Revised Statutes</a>
+      (Titles 1–56) are the broader statutory corpus: criminal law, banking,
+      insurance, education, public records, and everything else the legislature
+      has codified. Together they sit at the heart of Louisiana law. The official
+      source ships them as tens of thousands of ASP.NET pages with no
+      machine-readable export. This site renders a structured, versioned,
+      hash-verified release of both — readable for humans, retrievable for machines.
     </p>
 
     <h2>Who this is for</h2>
@@ -88,14 +97,23 @@ const activeArticles = manifest.totals.by_status.active ?? 0;
     <h2>What you can do here</h2>
     <ul>
       <li>
-        Jump directly to any article. Every article has a stable short URL — for example
-        <a href="/cc/2315"><code>/cc/2315</code></a> for Article 2315 on tort liability.
+        Jump directly to any Civil Code article — every article has a stable short URL,
+        e.g. <a href="/cc/2315"><code>/cc/2315</code></a> for Article 2315 on tort
+        liability.
       </li>
       <li>
-        <a href="/search">Search</a> the entire Code, filtered by status and Book.
+        Jump directly to any Revised Statute section — every section has a stable URL
+        keyed by Title and section, e.g.
+        <a href="/rs/title-14/section-30"><code>/rs/title-14/section-30</code></a>
+        for R.S. 14:30 (first degree murder).
       </li>
       <li>
-        <a href="/cc">Browse</a> by Book → Title → Chapter from the Civil Code root.
+        <a href="/search">Search</a> both corpora, filterable by corpus, status, and
+        location.
+      </li>
+      <li>
+        <a href="/cc">Browse the Civil Code</a> by Book → Title → Chapter, or
+        <a href="/rs">browse the Revised Statutes</a> Title by Title.
       </li>
       <li>
         Cite confidently. Each page offers Bluebook, permalink, and BibTeX forms.

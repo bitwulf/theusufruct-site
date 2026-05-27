@@ -4,7 +4,7 @@ const isDev = import.meta.env.DEV;
 ---
 <Base
   title="Search"
-  description="Full-text search of the Louisiana Civil Code. Filter by status and Book."
+  description="Full-text search of the Louisiana Civil Code and Revised Statutes. Filter by corpus, status, and location."
   searchable={false}
 >
   <article>
@@ -55,7 +55,7 @@ const isDev = import.meta.env.DEV;
         excerptLength: 30,
         showEmptyFilters: false,
         translations: {
-          placeholder: 'Search the Civil Code…',
+          placeholder: 'Search the Civil Code and Revised Statutes…',
           zero_results: 'No matches for "[SEARCH_TERM]".'
         }
       });

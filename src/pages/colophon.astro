@@ -1,6 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
-import { release, manifest } from '../lib/corpus.ts';
+import { manifest } from '../lib/cc.ts';
+import { rsManifest } from '../lib/rs.ts';
+import { release } from '../lib/corpus.ts';
 const buildTime = new Date().toISOString();
 ---
 <Base
@@ -45,10 +47,14 @@ const buildTime = new Date().toISOString();
         <a href={release.releasePage} rel="noopener"><code>{release.tag}</code></a>,
         generated {release.generatedAt}.
       </dd>
-      <dt>Articles emitted</dt>
+      <dt>Civil Code articles emitted</dt>
       <dd>{manifest.totals.articles_emitted.toLocaleString()} ({manifest.totals.by_status.active ?? 0} active · {manifest.totals.by_status.repealed ?? 0} repealed · {manifest.totals.by_status.blank ?? 0} blank)</dd>
-      <dt>Containers</dt>
+      <dt>Civil Code containers</dt>
       <dd>{manifest.totals.containers}</dd>
+      <dt>Revised Statutes sections emitted</dt>
+      <dd>{rsManifest.totals.sections_emitted.toLocaleString()} ({rsManifest.totals.by_status.active ?? 0} active · {rsManifest.totals.by_status.repealed ?? 0} repealed · {rsManifest.totals.by_status.blank ?? 0} blank{rsManifest.totals.by_status.reserved ? ' · ' + rsManifest.totals.by_status.reserved + ' reserved' : ''})</dd>
+      <dt>Revised Statutes containers</dt>
+      <dd>{rsManifest.totals.containers}</dd>
       <dt>Schema version</dt>
       <dd><code>{manifest.schema_version}</code></dd>
       <dt>Site built</dt>

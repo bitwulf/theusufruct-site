@@ -1,9 +1,16 @@
 ---
 import Base from '../layouts/Base.astro';
-import { ALL_NUMBERS } from '../lib/corpus.ts';
-// Build-time neighbor map used by the client script to suggest valid articles
-// when someone navigates to a missing slot like /cc/9999.
-const exists = JSON.stringify(ALL_NUMBERS);
+import { ALL_NUMBERS } from '../lib/cc.ts';
+import { sections } from '../lib/rs.ts';
+
+// Build-time neighbor maps. CC: a flat list of article numbers. LRS: a
+// title→sections lookup keyed by title number.
+const ccExists = JSON.stringify(ALL_NUMBERS);
+const rsByTitle: Record<string, string[]> = {};
+for (const s of sections) {
+  (rsByTitle[s.title_number] ??= []).push(s.section_number);
+}
+const rsExists = JSON.stringify(rsByTitle);
 ---
 <Base
   title="Not found"
@@ -14,49 +21,82 @@ const exists = JSON.stringify(ALL_NUMBERS);
   <article class="prose">
     <h1>Not found</h1>
     <p>
-      That URL doesn't correspond to a Civil Code article or container in the current
+      That URL doesn't correspond to an article, section, or container in the current
       snapshot. A few things you can try:
     </p>
     <ul>
-      <li><a href="/cc">Browse the Code</a> from the top.</li>
-      <li><a href="/search">Search</a> the full text.</li>
-      <li>If you were looking for an article number, the closest existing neighbors are below.</li>
+      <li><a href="/cc">Browse the Civil Code</a> from the top.</li>
+      <li><a href="/rs">Browse the Revised Statutes</a> from the top.</li>
+      <li><a href="/search">Search</a> the full text of both corpora.</li>
+      <li>If you were looking for a specific article or section, the closest existing neighbors are below.</li>
     </ul>
 
     <div id="neighbors" style="margin-top: var(--space-5);"></div>
   </article>
 
-  <script id="all-numbers" type="application/json" set:html={exists}></script>
+  <script id="cc-numbers" type="application/json" set:html={ccExists}></script>
+  <script id="rs-by-title" type="application/json" set:html={rsExists}></script>
   <script is:inline>
     (function () {
-      var raw = document.getElementById('all-numbers');
-      if (!raw) return;
-      var nums = JSON.parse(raw.textContent || '[]');
+      var ccRaw = document.getElementById('cc-numbers');
+      var rsRaw = document.getElementById('rs-by-title');
+      if (!ccRaw || !rsRaw) return;
+      var ccNums = JSON.parse(ccRaw.textContent || '[]');
+      var rsByTitle = JSON.parse(rsRaw.textContent || '{}');
       var path = location.pathname.replace(/\/$/, '');
-      var m = path.match(/^\/cc\/(\d+(?:\.\d+)?)$/);
-      if (!m) return;
-      var target = m[1];
+
       function key(n) {
-        var p = n.split('.');
+        var p = String(n).split('.');
         return [parseInt(p[0],10) || 0, parseInt(p[1],10) || 0];
       }
-      var tk = key(target);
-      var sorted = nums.slice().sort(function (a, b) {
-        var ka = key(a), kb = key(b);
-        return ka[0] !== kb[0] ? ka[0] - kb[0] : ka[1] - kb[1];
-      });
-      var before = null, after = null;
-      for (var i = 0; i < sorted.length; i++) {
-        var k = key(sorted[i]);
-        if (k[0] < tk[0] || (k[0] === tk[0] && k[1] < tk[1])) before = sorted[i];
-        else if ((k[0] > tk[0]) || (k[0] === tk[0] && k[1] > tk[1])) { after = sorted[i]; break; }
+      function pickNeighbors(list, target) {
+        var tk = key(target);
+        var sorted = list.slice().sort(function (a, b) {
+          var ka = key(a), kb = key(b);
+          return ka[0] !== kb[0] ? ka[0] - kb[0] : ka[1] - kb[1];
+        });
+        var before = null, after = null;
+        for (var i = 0; i < sorted.length; i++) {
+          var k = key(sorted[i]);
+          if (k[0] < tk[0] || (k[0] === tk[0] && k[1] < tk[1])) before = sorted[i];
+          else if ((k[0] > tk[0]) || (k[0] === tk[0] && k[1] > tk[1])) { after = sorted[i]; break; }
+        }
+        return { before: before, after: after };
       }
-      var html = '<p style="font-family:var(--mono);font-size:0.85rem;color:var(--ink-mute)">Nothing at <code>art. ' + target + '</code> in the current snapshot.</p>';
-      html += '<ul class="refs-list">';
-      if (before) html += '<li><a href="/cc/' + before + '">← Art. ' + before + '</a></li>';
-      if (after) html += '<li><a href="/cc/' + after + '">Art. ' + after + ' →</a></li>';
-      html += '</ul>';
-      document.getElementById('neighbors').innerHTML = html;
+
+      var ccM = path.match(/^\/cc\/(\d+(?:\.\d+)?)$/);
+      if (ccM) {
+        var target = ccM[1];
+        var n = pickNeighbors(ccNums, target);
+        var html = '<p style="font-family:var(--mono);font-size:0.85rem;color:var(--ink-mute)">Nothing at <code>art. ' + target + '</code> in the current snapshot.</p>';
+        html += '<ul class="refs-list">';
+        if (n.before) html += '<li><a href="/cc/' + n.before + '">← Art. ' + n.before + '</a></li>';
+        if (n.after) html += '<li><a href="/cc/' + n.after + '">Art. ' + n.after + ' →</a></li>';
+        html += '</ul>';
+        document.getElementById('neighbors').innerHTML = html;
+        return;
+      }
+
+      var rsM = path.match(/^\/rs\/title-([^/]+)\/section-([0-9]+(?:\.[0-9]+)?)$/);
+      if (rsM) {
+        var title = rsM[1];
+        var section = rsM[2];
+        var list = rsByTitle[title];
+        if (!list || !list.length) {
+          var html = '<p style="font-family:var(--mono);font-size:0.85rem;color:var(--ink-mute)">No Title <code>' + title + '</code> in the current snapshot.</p>';
+          html += '<p><a href="/rs">Browse all Titles →</a></p>';
+          document.getElementById('neighbors').innerHTML = html;
+          return;
+        }
+        var n = pickNeighbors(list, section);
+        var html = '<p style="font-family:var(--mono);font-size:0.85rem;color:var(--ink-mute)">Nothing at <code>R.S. ' + title + ':' + section + '</code> in the current snapshot.</p>';
+        html += '<ul class="refs-list">';
+        if (n.before) html += '<li><a href="/rs/title-' + title + '/section-' + n.before + '">← R.S. ' + title + ':' + n.before + '</a></li>';
+        if (n.after) html += '<li><a href="/rs/title-' + title + '/section-' + n.after + '">R.S. ' + title + ':' + n.after + ' →</a></li>';
+        html += '</ul>';
+        document.getElementById('neighbors').innerHTML = html;
+        return;
+      }
     })();
   </script>
 </Base>

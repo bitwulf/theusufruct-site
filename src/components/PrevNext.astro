@@ -1,53 +1,93 @@
 ---
-import { neighbors, articlesByNumber } from '../lib/corpus.ts';
+// Prev/next navigation between consecutive sections in the same corpus.
+// For CC: numbers are article numbers, URLs are /cc/{n}.
+// For LRS: numbers are section numbers within a Title; URLs are
+//   /rs/title-{title}/section-{n}.
 
-export interface Props {
+import { neighbors, articlesByNumber } from '../lib/cc.ts';
+import { sectionNeighbors, sectionsByKey } from '../lib/rs.ts';
+
+export interface CcProps {
   number: string;
+  corpus?: 'cc';
 }
-const { number } = Astro.props;
-const n = neighbors(number);
-const current = articlesByNumber.get(number);
-const isActive = current?.status === 'active';
+export interface RsProps {
+  corpus: 'rs';
+  title: string;
+  section: string;
+}
+export type Props = CcProps | RsProps;
 
-// Defaults: skip repealed/blank → use prevActive/nextActive when the current
-// article is active. Repealed/blank pages show "all" by default so the user
-// sees adjacent slots (more useful context for missing articles).
-const defaultPrev = isActive ? n.prevActive : n.prevAll;
-const defaultNext = isActive ? n.nextActive : n.nextAll;
+const props = Astro.props as Props;
 
-const prevAll = n.prevAll;
-const nextAll = n.nextAll;
+let prevActive: string | null;
+let nextActive: string | null;
+let prevAll: string | null;
+let nextAll: string | null;
+let isActive: boolean;
+let hrefPrefix: string;
+let unitLabel: string;
+
+if (props.corpus === 'rs') {
+  const n = sectionNeighbors(props.title, props.section);
+  prevActive = n.prevActive;
+  nextActive = n.nextActive;
+  prevAll = n.prevAll;
+  nextAll = n.nextAll;
+  isActive =
+    sectionsByKey.get(`${props.title}:${props.section}`)?.status === 'active';
+  hrefPrefix = `/rs/title-${props.title}/section-`;
+  unitLabel = 'R.S.';
+} else {
+  const n = neighbors(props.number);
+  prevActive = n.prevActive;
+  nextActive = n.nextActive;
+  prevAll = n.prevAll;
+  nextAll = n.nextAll;
+  isActive = articlesByNumber.get(props.number)?.status === 'active';
+  hrefPrefix = '/cc/';
+  unitLabel = 'Art.';
+}
+
+const defaultPrev = isActive ? prevActive : prevAll;
+const defaultNext = isActive ? nextActive : nextAll;
+
+const formatLabel = (n: string) =>
+  props.corpus === 'rs' ? `${unitLabel} ${(props as RsProps).title}:${n}` : `${unitLabel} ${n}`;
 ---
 <section class="article__section">
-  <h2>Article navigation</h2>
+  <h2>{props.corpus === 'rs' ? 'Section navigation' : 'Article navigation'}</h2>
   <div
     class="prevnext"
     data-prevnext
-    data-prev-active={n.prevActive ?? ''}
-    data-next-active={n.nextActive ?? ''}
-    data-prev-all={n.prevAll ?? ''}
-    data-next-all={n.nextAll ?? ''}
+    data-prev-active={prevActive ?? ''}
+    data-next-active={nextActive ?? ''}
+    data-prev-all={prevAll ?? ''}
+    data-next-all={nextAll ?? ''}
+    data-href-prefix={hrefPrefix}
+    data-unit={unitLabel}
+    data-title={props.corpus === 'rs' ? props.title : ''}
   >
     {defaultPrev ? (
-      <a href={`/cc/${defaultPrev}`} data-prev rel="prev">
+      <a href={`${hrefPrefix}${defaultPrev}`} data-prev rel="prev">
         <span class="prevnext__hint">← Previous</span>
-        <span class="prevnext__num">Art. {defaultPrev}</span>
+        <span class="prevnext__num">{formatLabel(defaultPrev)}</span>
       </a>
     ) : (
       <span class="prevnext__hint empty">← Previous</span>
     )}
     {defaultNext ? (
-      <a href={`/cc/${defaultNext}`} class="prevnext__right" data-next rel="next">
+      <a href={`${hrefPrefix}${defaultNext}`} class="prevnext__right" data-next rel="next">
         <span class="prevnext__hint">Next →</span>
-        <span class="prevnext__num">Art. {defaultNext}</span>
+        <span class="prevnext__num">{formatLabel(defaultNext)}</span>
       </a>
     ) : (
       <span class="prevnext__hint prevnext__right empty">Next →</span>
     )}
-    {(prevAll !== n.prevActive || nextAll !== n.nextActive) && (
+    {(prevAll !== prevActive || nextAll !== nextActive) && (
       <label class="prevnext__toggle">
         <input type="checkbox" data-include-all checked={!isActive} />
-        Include repealed and blank articles in navigation
+        Include repealed and blank {props.corpus === 'rs' ? 'sections' : 'articles'} in navigation
       </label>
     )}
   </div>
@@ -64,11 +104,26 @@ const nextAll = n.nextAll;
     var nextActive = root.getAttribute('data-next-active');
     var prevAll = root.getAttribute('data-prev-all');
     var nextAll = root.getAttribute('data-next-all');
+    var prefix = root.getAttribute('data-href-prefix') || '/cc/';
+    var unit = root.getAttribute('data-unit') || 'Art.';
+    var title = root.getAttribute('data-title') || '';
+    function label(n) {
+      if (title) return unit + ' ' + title + ':' + n;
+      return unit + ' ' + n;
+    }
     toggle.addEventListener('change', function () {
       var p = toggle.checked ? prevAll : prevActive;
       var n = toggle.checked ? nextAll : nextActive;
-      if (prev && p) { prev.href = '/cc/' + p; prev.querySelector('.prevnext__num').textContent = 'Art. ' + p; }
-      if (next && n) { next.href = '/cc/' + n; next.querySelector('.prevnext__num').textContent = 'Art. ' + n; }
+      if (prev && p) {
+        prev.href = prefix + p;
+        var pn = prev.querySelector('.prevnext__num');
+        if (pn) pn.textContent = label(p);
+      }
+      if (next && n) {
+        next.href = prefix + n;
+        var nn = next.querySelector('.prevnext__num');
+        if (nn) nn.textContent = label(n);
+      }
     });
   })();
 </script>

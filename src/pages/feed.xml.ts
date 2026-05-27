@@ -1,12 +1,11 @@
-// Atom feed: one entry per corpus release snapshot we know about.
-// At v1 the live snapshot is the only one we publish — the upstream releases
-// list grows over time and any future builds will include past snapshots
-// automatically by querying the GitHub API at build time (kept simple for now
-// by emitting just the current release plus a self link to the API endpoint
-// so consumers can subscribe and we won't drift if we forget to update).
+// Atom feed: one entry per corpus release snapshot.
+// LRS rollout: we emit a single entry per snapshot summarizing both corpora
+// (CC + LRS). Per-section entries would bloat the feed unusably (~45K items).
 
 import type { APIRoute } from 'astro';
-import { release, manifest } from '../lib/corpus.ts';
+import { manifest } from '../lib/cc.ts';
+import { rsManifest } from '../lib/rs.ts';
+import { release } from '../lib/corpus.ts';
 
 const ORIGIN = 'https://theusufruct.com';
 
@@ -15,16 +14,20 @@ export const GET: APIRoute = async () => {
   const id = `${ORIGIN}/feed.xml`;
   const releaseEntryId = `tag:theusufruct.com,${release.tag}:snapshot/${release.tag}`;
   const entryUpdated = manifest.generated_at || updated;
-  const summary = `Snapshot ${release.tag}: ${manifest.totals.articles_emitted.toLocaleString()} article records, ${manifest.totals.containers} containers. Schema ${manifest.schema_version}.`;
-  const totals = manifest.totals.by_status ?? {};
-  const totalsLine = Object.entries(totals)
+  const summary = `Snapshot ${release.tag}: ${manifest.totals.articles_emitted.toLocaleString()} Civil Code article records (${manifest.totals.containers} containers) and ${rsManifest.totals.sections_emitted.toLocaleString()} Revised Statutes section records (${rsManifest.totals.containers} containers). Schema ${manifest.schema_version}.`;
+  const ccTotals = manifest.totals.by_status ?? {};
+  const ccTotalsLine = 'CC: ' + Object.entries(ccTotals)
+    .map(([k, v]) => `${v} ${k}`)
+    .join(' · ');
+  const rsTotals = rsManifest.totals.by_status ?? {};
+  const rsTotalsLine = 'LRS: ' + Object.entries(rsTotals)
     .map(([k, v]) => `${v} ${k}`)
     .join(' · ');
 
   const xml = `<?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <title>Usufruct — Civil Code snapshots</title>
-  <subtitle>Corpus releases of the Louisiana Civil Code.</subtitle>
+  <title>Usufruct — corpus snapshots</title>
+  <subtitle>Corpus releases of the Louisiana Civil Code and Revised Statutes.</subtitle>
   <link href="${ORIGIN}/" />
   <link rel="self" href="${id}" type="application/atom+xml" />
   <id>${id}</id>
@@ -43,7 +46,8 @@ export const GET: APIRoute = async () => {
     <summary>${summary}</summary>
     <content type="html">${escapeXml(`
       <p>${summary}</p>
-      <p>${totalsLine}</p>
+      <p>${ccTotalsLine}</p>
+      <p>${rsTotalsLine}</p>
       <p><a href="${release.archiveUrl}">Download</a> · <a href="${release.releasePage}">Release notes</a></p>
     `)}</content>
   </entry>

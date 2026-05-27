@@ -1,7 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
-import { rootContainers, countArticlesIn, manifest, release, stepLabel } from '../../lib/corpus.ts';
+import { rootContainers, countArticlesIn, manifest, stepLabel } from '../../lib/cc.ts';
+import { release } from '../../lib/corpus.ts';
 
 const totalArticles = manifest.totals.articles_emitted;
 const activeArticles = manifest.totals.by_status.active ?? 0;

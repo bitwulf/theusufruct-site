@@ -1,7 +1,7 @@
 // Citation formatting helpers.
 //
-// Bluebook (current year, derived from manifest.generated_at):
-//   La. Civ. Code art. 2315 (2026).
+// CC Bluebook: La. Civ. Code art. 2315 (2026).
+// LRS Bluebook: La. Rev. Stat. Ann. § 14:30 (2026).
 // Permalink: the canonical absolute URL on theusufruct.com.
 // BibTeX: @misc with snapshot date as `note`.
 
@@ -24,6 +24,27 @@ export function citationFor(articleNumber: string): CitationBundle {
     `@misc{lacivcode-art-${id},`,
     `  title        = {La. Civ. Code art. ${articleNumber}},`,
     `  howpublished = {Louisiana Civil Code},`,
+    `  year         = {${year}},`,
+    `  url          = {${permalink}},`,
+    `  note         = {Snapshot ${release.tag}}`,
+    '}',
+  ].join('\n');
+  return { bluebook, permalink, bibtex };
+}
+
+// LRS citation: "La. Rev. Stat. Ann. § 14:30 (2026)."
+export function lrsCitation(
+  title: string,
+  section: string,
+): CitationBundle {
+  const year = release.generatedYear;
+  const permalink = `${SITE_ORIGIN}/rs/title-${title}/section-${section}`;
+  const bluebook = `La. Rev. Stat. Ann. § ${title}:${section} (${year}).`;
+  const id = `${title}-${section.replace(/\./g, '-')}`;
+  const bibtex = [
+    `@misc{larevstat-${id},`,
+    `  title        = {La. Rev. Stat. Ann. § ${title}:${section}},`,
+    `  howpublished = {Louisiana Revised Statutes},`,
     `  year         = {${year}},`,
     `  url          = {${permalink}},`,
     `  note         = {Snapshot ${release.tag}}`,

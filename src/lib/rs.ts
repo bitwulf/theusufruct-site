@@ -183,6 +183,33 @@ function buildRsContainers(): RsContainer[] {
 
 export const rsAllContainers: RsContainer[] = buildRsContainers();
 
+// Fallback display names for LRS Titles whose `name` field is empty in
+// the upstream corpus. Patch in place so every site surface — the /rs
+// browse index, the Title page header, and section breadcrumbs — picks
+// up the corrected name. Remove an entry when the corpus is fixed
+// upstream; it's a no-op if the data already has a non-empty name.
+const TITLE_NAME_FALLBACKS: Record<string, string> = {
+  '33': 'CITIES, TOWNS, AND VILLAGES',
+};
+
+for (const c of rsAllContainers) {
+  if (c.level !== 'title') continue;
+  const fallback = TITLE_NAME_FALLBACKS[c.number];
+  if (fallback && (!c.name || c.name.trim() === '')) {
+    c.name = fallback;
+    c.self.name = fallback;
+  }
+}
+
+for (const s of sections) {
+  const top = s.hierarchy_path[0];
+  if (!top || top.level !== 'title') continue;
+  const fallback = TITLE_NAME_FALLBACKS[top.number];
+  if (fallback && (!top.name || top.name.trim() === '')) {
+    top.name = fallback;
+  }
+}
+
 export const rsContainersByPath = new Map<string, RsContainer>(
   rsAllContainers.map((c) => [c.pathSegs.join('/'), c]),
 );

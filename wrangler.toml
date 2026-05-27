@@ -1,0 +1,23 @@
+# Cloudflare Worker config for theusufruct.com.
+#
+# The Worker serves the built static site from R2. The R2 bucket
+# theusufruct-prod is populated by .github/workflows/deploy.yml on push
+# to main; this Worker reads from it.
+
+name = "theusufruct"
+main = "worker/index.ts"
+compatibility_date = "2026-05-27"
+
+# R2 binding — exposed to the Worker as env.ASSETS.
+[[r2_buckets]]
+binding = "ASSETS"
+bucket_name = "theusufruct-prod"
+
+# No production route declared yet. While testing, the Worker is reachable
+# at theusufruct.<your-subdomain>.workers.dev. After verifying everything
+# works end-to-end, attach the production route either via the Cloudflare
+# dashboard (Workers Routes → theusufruct.com/*) or by uncommenting:
+#
+# [[routes]]
+# pattern = "theusufruct.com/*"
+# zone_name = "theusufruct.com"
